@@ -1,0 +1,50 @@
+# ===========================================================================
+# .prettierignore：Prettier 忽略规则
+# 仅排除无需自动格式化的文件/目录，提升性能并避免误改
+# ===========================================================================
+
+# 构建产物
+/dist
+/build
+/out
+/.output
+/public/build
+/.vite
+/.nuxt
+/.svelte-kit
+/.astro
+/.next
+/.vercel
+/.netlify
+
+# 依赖
+node_modules/
+
+# 非文本资源
+*.{png,jpg,jpeg,gif,webp,avif,svgz,ico,woff,woff2,ttf,otf,mp3,wav,mp4,mov,pdf,zip,gz}
+
+# 自动生成或系统文件
+*.min.*
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# 锁文件与工具配置
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+tsconfig.json
+jsconfig.json
+.nvmrc
+.editorconfig
+
+# 测试与报告
+/__snapshots__/
+/coverage/
+/test-results/
+
+# IDE 与临时目录
+/.vscode/*.json
+/.idea/
+/.cache/
+/.temp/
