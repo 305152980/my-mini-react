@@ -1,0 +1,19 @@
+# EditorConfig is awesome: https://EditorConfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# Markdown: 4 空格便于列表嵌套（如 - item\n    - nested）
+[*.md]
+indent_size = 4
+
+# Makefile: 语法强制要求硬制表符（tab 字符）
+[Makefile]
+indent_style = tab
+indent_size = unset
