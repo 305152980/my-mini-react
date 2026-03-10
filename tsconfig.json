@@ -1,0 +1,73 @@
+{
+  "compilerOptions": {
+    /* ┌───────────────────────┐ */
+    /* │ 基础编译目标           │ */
+    /* └───────────────────────┘ */
+    "target": "ES2020", // 编译到 ES2020（Vue 3 支持，平衡兼容性与现代语法）
+    "module": "ESNext", // 使用 ES 模块语法（与 Vite/现代浏览器兼容）
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], // 运行环境支持的 API（浏览器环境）
+
+    /* ┌───────────────────────┐ */
+    /* │ 模块解析策略（TS 5.0+）│ */
+    /* └───────────────────────┘ */
+    "moduleResolution": "bundler", // 针对 Vite/Webpack 等打包工具的解析模式（推荐）
+    "verbatimModuleSyntax": true, // 显式区分 type/value 导入（需用 import type {...}），提升 tree-shaking
+
+    /* ┌───────────────────────┐ */
+    /* │ 严格类型检查           │ */
+    /* └───────────────────────┘ */
+    "strict": true, // 启用所有严格类型检查（强烈推荐）
+    "useDefineForClassFields": true, // 类字段使用 `defineProperty` 语义（与 Vue 3 响应式兼容）
+    "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致（避免跨平台问题）
+    "noImplicitOverride": true, // 子类重写方法必须加 override 关键字
+    "noFallthroughCasesInSwitch": true, // 禁止 switch 语句意外穿透
+
+    /* ┌───────────────────────┐ */
+    /* │ 模块互操作与兼容       │ */
+    /* └───────────────────────┘ */
+    "esModuleInterop": true, // 允许从 CommonJS 模块导入默认导出（如 import React from 'react'）
+    "resolveJsonModule": true, // 支持 import .json 文件
+    "allowJs": true, // 允许 .js 文件参与类型检查（混合项目友好）
+    "outDir": "./dist", // 所有输出放这里
+    "rootDir": "./src", // 源码根目录（保持结构）
+
+    /* ┌───────────────────────┐ */
+    /* │ 路径映射（别名支持）   │ */
+    /* └───────────────────────┘ */
+    "baseUrl": ".", // 解析非相对模块的基础路径
+    "paths": {
+      "@/*": ["src/*"] // 配合 Vite 别名，使 @/components 等路径生效
+    },
+
+    /* ┌───────────────────────┐ */
+    /* │ 开发与构建体验         │ */
+    /* └───────────────────────┘ */
+    "sourceMap": true, // 生成 source map，便于调试
+    "skipLibCheck": true, // 跳过 node_modules 中 .d.ts 的类型检查（加快编译）
+    "declaration": false, // 不生成 .d.ts 声明文件（除非开发 npm 包）
+
+    /* ┌───────────────────────┐ */
+    /* │ Vue / JSX 支持         │ */
+    /* └───────────────────────┘ */
+    "jsx": "preserve", // 保留 JSX 语法，交由 Vue 编译器处理（用于 <script setup lang="tsx">）
+
+    /* ┌───────────────────────┐ */
+    /* │ 全局类型上下文         │ */
+    /* └───────────────────────┘ */
+    "types": [
+      "node", // 提供 Node.js 全局类型（如 process）
+      "vite/client" // 提供 import.meta.env 等 Vite 特有类型
+    ]
+  },
+  "include": [
+    "src/**/*", // 包含 src 下所有 TS/JS/Vue 文件
+    "types/**/*", // 自定义类型定义目录
+    "vite.config.ts", // Vite 配置文件（含 TS）
+    "env.d.ts" // Vue/Vite 环境声明文件（必须存在）
+  ],
+  "exclude": [
+    "node_modules", // 排除依赖
+    "dist", // 排除构建产物
+    "public" // 排除静态资源目录
+  ]
+}
