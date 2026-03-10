@@ -1,0 +1,27 @@
+# --------------------------
+# 新增：Monorepo 场景补充（可选）
+# --------------------------
+packages/*/dist/          # Monorepo 子包构建产物
+packages/*/node_modules/  # Monorepo 子包依赖
+turbo/                    # Turborepo 缓存
+
+# --------------------------
+# 新增：移动端/小程序场景补充（可选）
+# --------------------------
+unpackage/                # uni-app 打包产物
+miniprogram_npm/          # 微信小程序 npm 依赖
+.wxminiprogram/           # 微信小程序缓存
+dist/build/               # Taro 构建产物
+
+# --------------------------
+# 新增：国际化/文档场景补充（可选）
+# --------------------------
+locales/**/*.json         # 国际化 JSON 文件（无需 lint）
+docs/                     # 文档目录（如 VuePress/Docusaurus）
+*.md                      # Markdown 文件（如需 lint 可删除）
+
+# --------------------------
+# 新增：安全/合规场景补充（可选）
+# --------------------------
+.secrets/                 # 密钥文件目录
+.pgp/                     # PGP 加密文件
