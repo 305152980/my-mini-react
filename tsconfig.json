@@ -47,16 +47,24 @@
     "declaration": false, // 不生成 .d.ts 声明文件（除非开发 npm 包）
 
     /* ┌───────────────────────┐ */
-    /* │ Vue / JSX 支持         │ */
+    /* │ 🚀 React 18+ & Vue 3 支持 │ */
     /* └───────────────────────┘ */
-    "jsx": "preserve", // 保留 JSX 语法，交由 Vue 编译器处理（用于 <script setup lang="tsx">）
+    // 1. React 17+ 需要此设置以启用自动 JSX 转换（无需 import React）。
+    // 2. Vue 3 + Vite 在此设置下也能正常工作（Vite 插件会拦截 .vue 文件处理）。
+    // 3. 如果是纯 TSX 文件 (.tsx)，将使用 React 规则；如果是 .vue，Vue 插件会接管。
+    "jsx": "react-jsx",
+
+    // 可选：如果你在使用某些特定的 JSX 库，可以指定 jsxImportSource
+    // "jsxImportSource": "react", 
 
     /* ┌───────────────────────┐ */
     /* │ 全局类型上下文         │ */
     /* └───────────────────────┘ */
     "types": [
       "node", // 提供 Node.js 全局类型（如 process）
-      "vite/client" // 提供 import.meta.env 等 Vite 特有类型
+      "vite/client", // 提供 import.meta.env 等 Vite 特有类型
+      "@types/react", // 提供 React 全局类型（如 JSX.Element）
+      "@types/react-dom" // 提供 ReactDOM 全局类型（如 ReactDOM.Renderer）
     ]
   },
   "include": [
