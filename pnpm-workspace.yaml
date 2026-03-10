@@ -1,0 +1,11 @@
+packages:
+  - 'packages/**'
+  - 'examples/**'
+  - '.'
+
+  # 忽略
+  - '!**/node_modules'
+  - '!**/dist'
+  - '!**/lib'
+  - '!**/coverage'
+  - '!packages/**/__tests__'
