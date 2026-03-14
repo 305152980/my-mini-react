@@ -1,5 +1,5 @@
 import { push, pop, peek } from './SchedulerMinHeap'
-import { getCurrentTime, isFn } from 'shared/utils'
+import { getCurrentTime, isFn } from '@my-mini-react/shared/utils'
 import {
   type PriorityLevel,
   NoPriority,
