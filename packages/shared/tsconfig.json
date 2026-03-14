@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.json", // 继承根目录TS配置
+  "compilerOptions": {
+    "declaration": true, // 生成类型声明文件（.d.ts），关键：供其他包识别类型
+    "noEmit": true // 禁止TS单独编译输出文件（核心，避免手动执行tsc时生成无用产物）
+  },
+  "include": ["./**/*"], // 包含当前包下所有文件（TS/JS/Vue等）
+  "exclude": ["node_modules", "dist"] // 排除依赖和构建产物
+}

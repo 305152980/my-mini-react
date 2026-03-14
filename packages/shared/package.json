@@ -10,6 +10,7 @@
   "exports": {
     "./utils": {
       "types": "./utils.ts",
+      "import": "./utils.ts",
       "default": "./utils.ts"
     }
   },
