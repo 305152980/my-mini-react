@@ -7,6 +7,12 @@
   "author": "",
   "license": "MIT",
   "private": true,
+  "exports": {
+    "./utils": {
+      "types": "./utils.ts",
+      "default": "./utils.ts"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   }
