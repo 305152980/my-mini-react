@@ -1,9 +1,9 @@
 {
   "name": "my-mini-react",
   "version": "1.0.0",
-  "description": "A mini React implementation for learning",
   "private": true,
   "type": "module",
+  "description": "A mini React implementation for learning",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

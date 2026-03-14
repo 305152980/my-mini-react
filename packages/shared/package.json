@@ -1,12 +1,9 @@
 {
   "name": "@my-mini-react/shared",
   "version": "1.0.0",
-  "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "description": "",
+  "private": true,
   "type": "module",
+  "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
