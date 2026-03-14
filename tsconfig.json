@@ -29,15 +29,14 @@
     "resolveJsonModule": true, // 支持 import .json 文件
     "allowJs": true, // 允许 .js 文件参与类型检查（混合项目友好）
     "outDir": "./dist", // 所有输出放这里
-    "rootDir": "./src", // 源码根目录（保持结构）
+    // "rootDir": "./src", // 源码根目录（保持结构）（此配置会导致报错：2026-03-14 注释）
 
     /* ┌───────────────────────┐ */
     /* │ 路径映射（别名支持）   │ */
     /* └───────────────────────┘ */
     "baseUrl": ".", // 解析非相对模块的基础路径
     "paths": {
-      "@/*": ["src/*"], // 配合 Vite 别名，使 @/components 等路径生效
-      "@my-mini-react/*": ["packages/*"] // 支持 monorepo 内部包的路径别名（如 @my-mini-react/shared）
+      // "@/*": ["src/*"], // 配合 Vite 别名，使 @/components 等路径生效（此配置会导致报错：2026-03-14 注释）
     },
 
     /* ┌───────────────────────┐ */
@@ -69,7 +68,7 @@
     ]
   },
   "include": [
-    "src/**/*", // 包含 src 下所有 TS/JS/Vue 文件
+    // "src/**/*", // 包含 src 下所有 TS/JS/Vue 文件（此配置会导致报错：2026-03-14 注释）
     "types/**/*", // 自定义类型定义目录
     "vite.config.ts", // Vite 配置文件（含 TS）
     "env.d.ts", // Vue/Vite 环境声明文件（必须存在）
