@@ -36,7 +36,8 @@
     /* └───────────────────────┘ */
     "baseUrl": ".", // 解析非相对模块的基础路径
     "paths": {
-      "@/*": ["src/*"] // 配合 Vite 别名，使 @/components 等路径生效
+      "@/*": ["src/*"], // 配合 Vite 别名，使 @/components 等路径生效
+      "@my-mini-react/*": ["packages/*"] // 支持 monorepo 内部包的路径别名（如 @my-mini-react/shared）
     },
 
     /* ┌───────────────────────┐ */
@@ -71,7 +72,8 @@
     "src/**/*", // 包含 src 下所有 TS/JS/Vue 文件
     "types/**/*", // 自定义类型定义目录
     "vite.config.ts", // Vite 配置文件（含 TS）
-    "env.d.ts" // Vue/Vite 环境声明文件（必须存在）
+    "env.d.ts", // Vue/Vite 环境声明文件（必须存在）
+    "packages/**/*" // 包含 monorepo 内部包的源码
   ],
   "exclude": [
     "node_modules", // 排除依赖
