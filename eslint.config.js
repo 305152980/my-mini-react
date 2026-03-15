@@ -31,7 +31,7 @@ export default [
       'node_modules/**', // 第三方依赖（无需 lint）
       'public/**', // 静态资源（通常不含可 lint 的 JS/TS）
       'coverage/**', // 测试覆盖率报告
-      '*.config.*', // 构建/工具配置文件（如 vite.config.ts），可选是否忽略
+      // '*.config.*', // 构建/工具配置文件（如 vite.config.ts），可选是否忽略
       '**/*.d.ts', // TypeScript 声明文件（由编译器生成，无需人工 lint）
     ],
   },
