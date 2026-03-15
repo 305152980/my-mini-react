@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => ({
     },
     // Rollup底层配置 - 定制库模式打包规则
     rollupOptions: {
-      external: ['@my-mini-react/scheduler', '@my-mini-react/react-reconciler'],
+      external: [], // 空数组表示无外部依赖，强制将shared+scheduler+react-reconciler源码合并打入react-dom产物
       output: { globals: {} }, // 无全局依赖，留空即可
     },
   },
