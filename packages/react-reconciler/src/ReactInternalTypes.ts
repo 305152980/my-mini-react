@@ -45,3 +45,21 @@ export type Fiber = {
   // 双缓存机制：指向另一棵 Fiber 树的对应节点（current <-> workInProgress）
   alternate: Fiber | null
 }
+
+// 挂载容器类型：React 应用挂载的 DOM 根节点
+// 对应 createRoot(rootNode) 中的 rootNode
+export type Container = Element | Document | DocumentFragment
+
+// Fiber 树根节点
+// 全局唯一，管理整个应用的 Fiber 树、更新队列、渲染状态
+export type FiberRoot = {
+  // 挂载的 DOM 容器（应用渲染到哪个 DOM 节点上）
+  containerInfo: Container
+
+  // 当前页面【正在渲染/已渲染】的 Fiber 树 根节点
+  current: Fiber
+
+  // 【刚构建完成、等待提交】的 Fiber 树 根节点
+  // 提交后会将 current 指向它
+  finishedWork: Fiber | null
+}
