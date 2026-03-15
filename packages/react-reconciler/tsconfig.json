@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json", // 继承根目录TS配置，保持一致的编译选项和路径映射
+  "compilerOptions": {
+    "outDir": "./dist", // 后续打包输出目录（保持与根目录一致，方便构建工具识别）
+    "declaration": true, // 生成类型声明文件（.d.ts），关键：供其他包识别类型，尤其在 monorepo 内部依赖时非常重要
+    "baseUrl": ".", // 解析非相对模块的基础路径，保持与根目录一致，适配 monorepo 内部结构
+    "paths": {
+      "@src/*": ["src/*"], // 解析 @src 别名到当前包的 src 目录，保持与根目录一致，适配 monorepo 内部结构
+      "@my-mini-react/shared/*": ["../shared/*"], // 解析 @my-mini-react/shared 别名到 monorepo 内部 shared 包，适配 monorepo 内部结构
+      "@my-mini-react/scheduler/*": ["../scheduler/*"] // 解析 @my-mini-react/scheduler 别名到 monorepo 内部 scheduler 包，适配 monorepo 内部结构
+    }
+  },
+  "include": ["./**/*"], // 包含当前包下所有文件（TS/JS/Vue等），确保类型检查覆盖整个包的源码
+  "exclude": ["node_modules", "dist"] // 排除依赖和构建产物，避免不必要的类型检查和编译输出
+}
