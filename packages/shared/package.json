@@ -7,18 +7,6 @@
   "author": "",
   "license": "MIT",
   "private": true,
-  "exports": {
-    "./utils": {
-      "types": "./utils.ts",
-      "import": "./utils.ts",
-      "default": "./utils.ts"
-    },
-    "./ReactTypes": {
-      "types": "./ReactTypes.ts",
-      "import": "./ReactTypes.ts",
-      "default": "./ReactTypes.ts"
-    }
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   }
