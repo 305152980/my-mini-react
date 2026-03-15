@@ -12,6 +12,11 @@
       "types": "./utils.ts",
       "import": "./utils.ts",
       "default": "./utils.ts"
+    },
+    "./ReactTypes": {
+      "types": "./ReactTypes.ts",
+      "import": "./ReactTypes.ts",
+      "default": "./ReactTypes.ts"
     }
   },
   "scripts": {
