@@ -84,3 +84,26 @@ export function createFiberFromElement(element: ReactElement): Fiber {
   const fiber = createFiberFromTypeAndProps(type, key, pendingProps)
   return fiber
 }
+
+export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
+  let workInProgress = current.alternate
+  if (workInProgress === null) {
+    workInProgress = createFiber(current.tag, pendingProps, current.key)
+    workInProgress.elementType = current.elementType
+    workInProgress.type = current.type
+    workInProgress.stateNode = current.stateNode
+    workInProgress.alternate = current
+    current.alternate = workInProgress
+  } else {
+    workInProgress.pendingProps = pendingProps
+    workInProgress.type = current.type
+    workInProgress.flags = NoFlags
+  }
+  workInProgress.flags = current.flags
+  workInProgress.child = current.child
+  workInProgress.memoizedProps = current.memoizedProps
+  workInProgress.memoizedState = current.memoizedState
+  workInProgress.sibling = current.sibling
+  workInProgress.index = current.index
+  return workInProgress
+}
