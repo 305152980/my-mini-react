@@ -3,6 +3,7 @@ import { ensureRootIsScheduled } from './ReactFiberRootScheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { completeWork } from './ReactFiberCompleteWork'
+import { commitMutationEffects } from './ReactFiberCommitWork'
 
 type ExecutionContext = number
 
@@ -27,7 +28,9 @@ export function performConcurrentWorkOnRoot(root: FiberRoot): void {
   // 1、render，构建 fiber 树。
   renderRootSync(root)
   // 2、commit，提交 fiber 树到 DOM。
-  // commitRoot(root)
+  const finishedWork = root.current.alternate
+  root.finishedWork = finishedWork
+  commitRoot(root)
 }
 
 function renderRootSync(root: FiberRoot): void {
@@ -84,4 +87,15 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
     completedWork = returnFiber as Fiber
     workInProgress = completedWork
   } while (completedWork !== null)
+}
+
+function commitRoot(root: FiberRoot): void {
+  // 1、commit 阶段开始。
+  const previousExecutionContext = executionContext
+  executionContext |= CommitContext
+  // 2、mutation 阶段：渲染 DOM 树。
+  commitMutationEffects(root, root.finishedWork as Fiber)
+  // 3、commit 阶段结束。
+  executionContext = previousExecutionContext
+  workInProgressRoot = null
 }
