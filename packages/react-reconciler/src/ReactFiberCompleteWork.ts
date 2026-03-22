@@ -20,8 +20,8 @@ export function completeWork(
       // 4、把 DOM 节点保存在 Fiber 的 stateNode 上。
       workInProgress.stateNode = instance
       return null
+    // TODO
   }
-  // TODO
   throw new Error(
     `Unknown unit of work tag: ${workInProgress.tag}. This error is likely caused by a bug in React. Please file an issue.`
   )
@@ -42,7 +42,8 @@ function finalizeInitialChildren(domElement: HTMLElement, props: any): void {
 
 function appendAllChildren(parent: HTMLElement, workInProgress: Fiber): void {
   let nodeFiber = workInProgress.child
-  if (nodeFiber) {
+  while (nodeFiber !== null) {
     parent.appendChild(nodeFiber.stateNode)
+    nodeFiber = nodeFiber.sibling
   }
 }

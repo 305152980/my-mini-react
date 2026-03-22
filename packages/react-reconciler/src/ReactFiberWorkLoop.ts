@@ -24,7 +24,6 @@ export function scheduleUpdateOnFiber(root: FiberRoot, fiber: Fiber): void {
 }
 
 export function performConcurrentWorkOnRoot(root: FiberRoot): void {
-  // TODO
   // 1、render，构建 fiber 树。
   renderRootSync(root)
   // 2、commit，提交 fiber 树到 DOM。
