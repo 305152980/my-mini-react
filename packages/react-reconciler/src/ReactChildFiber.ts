@@ -1,6 +1,6 @@
 import type { Fiber } from './ReactInternalTypes'
 import { Placement } from './ReactFiberFlags'
-import { createFiberFromElement } from './ReactFiber'
+import { createFiberFromElement, createFiberFromText } from './ReactFiber'
 import { REACT_ELEMENT_TYPE } from '@my-mini-react/shared/ReactSymbols'
 import { isArray } from '@my-mini-react/shared/utils'
 
@@ -32,7 +32,21 @@ function createChildReconciler(
     createdFiber.return = returnFiber
     return createdFiber
   }
+  function reconcileSingleTextNode(
+    returnFiber: Fiber,
+    currentFirstChild: Fiber | null,
+    textContent: string
+  ): Fiber {
+    const createdFiber = createFiberFromText(textContent)
+    createdFiber.return = returnFiber
+    return createdFiber
+  }
   function createChild(returnFiber: Fiber, newChild: any): Fiber | null {
+    if (isText(newChild)) {
+      const created = createFiberFromText(newChild + '')
+      created.return = returnFiber
+      return created
+    }
     if (typeof newChild === 'object' && newChild !== null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
@@ -78,6 +92,11 @@ function createChildReconciler(
     currentFirstChild: Fiber | null,
     newChild: any
   ): Fiber | null {
+    if (isText(newChild)) {
+      return placeSingleChild(
+        reconcileSingleTextNode(returnFiber, currentFirstChild, newChild + '')
+      )
+    }
     if (typeof newChild === 'object' && newChild !== null) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
@@ -93,4 +112,11 @@ function createChildReconciler(
     return null
   }
   return reconcileChildFibers
+}
+
+function isText(newChild: any): boolean {
+  return (
+    (typeof newChild === 'string' && newChild !== '') ||
+    typeof newChild === 'number'
+  )
 }

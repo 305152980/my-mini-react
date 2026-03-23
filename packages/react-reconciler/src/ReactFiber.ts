@@ -3,6 +3,7 @@ import { type Fiber } from './ReactInternalTypes'
 import { NoFlags } from './ReactFiberFlags'
 import {
   HostComponent,
+  HostText,
   IndeterminateComponent,
   type WorkTag,
 } from './ReactWorkTags'
@@ -106,4 +107,9 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
   return workInProgress
+}
+
+export function createFiberFromText(content: string): Fiber {
+  const fiber = createFiber(HostText, content, null)
+  return fiber
 }

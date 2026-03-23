@@ -1,5 +1,5 @@
 import { type Fiber } from './ReactInternalTypes'
-import { HostRoot, HostComponent } from './ReactWorkTags'
+import { HostRoot, HostComponent, HostText } from './ReactWorkTags'
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber'
 import { isStr, isNum } from '@my-mini-react/shared/utils'
 
@@ -14,6 +14,8 @@ export function beginWork(
       return updateHostRoot(current, workInProgress)
     case HostComponent:
       return updateHostComponent(current, workInProgress)
+    case HostText:
+      return updateHostText(current, workInProgress)
     // TODO
   }
   throw new Error(
@@ -43,6 +45,10 @@ function updateHostComponent(
   const nextChildren = workInProgress.pendingProps.children
   reconcileChildren(current, workInProgress, nextChildren)
   return workInProgress.child
+}
+
+function updateHostText(current: Fiber | null, workInProgress: Fiber): null {
+  return null
 }
 
 function reconcileChildren(
