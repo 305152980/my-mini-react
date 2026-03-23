@@ -1,5 +1,5 @@
 import { type Fiber } from './ReactInternalTypes'
-import { HostRoot, HostComponent, HostText } from './ReactWorkTags'
+import { HostRoot, HostComponent, HostText, Fragment } from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
 
 export function completeWork(
@@ -9,6 +9,7 @@ export function completeWork(
   const newProps = workInProgress.pendingProps
   switch (workInProgress.tag) {
     case HostRoot:
+    case Fragment:
       return null
     case HostComponent:
       // 1、创建真实 DOM 节点。
@@ -47,7 +48,22 @@ function finalizeInitialChildren(domElement: HTMLElement, props: any): void {
 function appendAllChildren(parent: HTMLElement, workInProgress: Fiber): void {
   let nodeFiber = workInProgress.child
   while (nodeFiber !== null) {
-    parent.appendChild(nodeFiber.stateNode)
-    nodeFiber = nodeFiber.sibling
+    if (isHost(nodeFiber)) {
+      parent.appendChild(nodeFiber.stateNode)
+    } else if (nodeFiber.child !== null) {
+      nodeFiber = nodeFiber.child
+      continue
+    }
+    while (nodeFiber!.sibling === null) {
+      if (nodeFiber!.return === workInProgress) {
+        return
+      }
+      nodeFiber = nodeFiber!.return
+    }
+    nodeFiber = nodeFiber!.sibling
   }
+}
+
+export function isHost(fiber: Fiber): boolean {
+  return fiber.tag === HostComponent || fiber.tag === HostText
 }

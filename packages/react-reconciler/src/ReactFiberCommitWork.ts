@@ -1,6 +1,7 @@
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
 import { Placement } from './ReactFiberFlags'
 import { HostComponent, HostRoot, HostText } from './ReactWorkTags'
+import { isHost } from './ReactFiberCompleteWork'
 
 export function commitMutationEffects(
   root: FiberRoot,
@@ -30,17 +31,20 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
 }
 
 function commitPlacement(finishedWork: Fiber): void {
-  if (
-    finishedWork.stateNode &&
-    (finishedWork.tag === HostComponent || finishedWork.tag === HostText)
-  ) {
-    const domNode = finishedWork.stateNode as HTMLElement
+  if (finishedWork.stateNode && isHost(finishedWork)) {
+    const domNode = finishedWork.stateNode
     const parentFiber = getHostParentFiber(finishedWork)
     let parentDom = parentFiber.stateNode
     if (parentDom.containerInfo) {
       parentDom = parentDom.containerInfo
     }
     parentDom.appendChild(domNode)
+  } else {
+    let kid = finishedWork.child
+    while (kid !== null) {
+      commitPlacement(kid)
+      kid = kid.sibling
+    }
   }
 }
 

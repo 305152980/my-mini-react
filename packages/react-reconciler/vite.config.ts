@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => ({
 
   // 插件配置
   plugins: [
-    // vite-plugin-dts - 生成TS类型声明文件(.d.ts)，并合并shared包类型
+    // 配置 vite-plugin-dts 插件，以便在打包构建时，自动为你的 React 库生成 TypeScript 类型声明文件（.d.ts），并且能够正确处理跨包（如 shared 包）的类型引用。
     dts({
       outDir: resolve(REACT_RECONCILER_ROOT, 'dist'), // 类型文件输出目录，与JS产物同目录
       entryRoot: REACT_RECONCILER_ROOT, // 类型声明的根目录
