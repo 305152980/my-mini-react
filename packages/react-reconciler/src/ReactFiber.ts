@@ -4,6 +4,7 @@ import { NoFlags } from './ReactFiberFlags'
 import {
   ClassComponent,
   Fragment,
+  FunctionComponent,
   HostComponent,
   HostText,
   IndeterminateComponent,
@@ -71,6 +72,8 @@ export function createFiberFromTypeAndProps(
   if (isFn(type)) {
     if (type.prototype.isReactComponent) {
       fiberTag = ClassComponent
+    } else {
+      fiberTag = FunctionComponent
     }
   } else if (isStr(type)) {
     fiberTag = HostComponent

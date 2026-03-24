@@ -5,6 +5,7 @@ import {
   HostText,
   Fragment,
   ClassComponent,
+  FunctionComponent,
 } from './ReactWorkTags'
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber'
 import { isStr, isNum } from '@my-mini-react/shared/utils'
@@ -26,6 +27,8 @@ export function beginWork(
       return updateFragment(current, workInProgress)
     case ClassComponent:
       return updateClassComponent(current, workInProgress)
+    case FunctionComponent:
+      return updateFunctionComponent(current, workInProgress)
     // TODO
   }
   throw new Error(
@@ -78,6 +81,16 @@ function updateClassComponent(
   const instance = new type(pendingProps)
   workInProgress.stateNode = instance
   const children = instance.render()
+  reconcileChildren(current, workInProgress, children)
+  return workInProgress.child
+}
+
+function updateFunctionComponent(
+  current: Fiber | null,
+  workInProgress: Fiber
+): Fiber | null {
+  const { type, pendingProps } = workInProgress
+  const children = type(pendingProps)
   reconcileChildren(current, workInProgress, children)
   return workInProgress.child
 }

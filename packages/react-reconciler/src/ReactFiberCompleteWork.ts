@@ -5,6 +5,7 @@ import {
   HostText,
   Fragment,
   ClassComponent,
+  FunctionComponent,
 } from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
 
@@ -17,6 +18,7 @@ export function completeWork(
     case HostRoot:
     case Fragment:
     case ClassComponent:
+    case FunctionComponent:
       return null
     case HostComponent:
       // 1、创建真实 DOM 节点。
