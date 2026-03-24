@@ -2,13 +2,14 @@ import { type ReactElement } from '@my-mini-react/shared/ReactTypes'
 import { type Fiber } from './ReactInternalTypes'
 import { NoFlags } from './ReactFiberFlags'
 import {
+  ClassComponent,
   Fragment,
   HostComponent,
   HostText,
   IndeterminateComponent,
   type WorkTag,
 } from './ReactWorkTags'
-import { isStr } from '@my-mini-react/shared/utils'
+import { isStr, isFn } from '@my-mini-react/shared/utils'
 import { REACT_ELEMENT_TYPE } from '@my-mini-react/shared/ReactSymbols'
 
 /**
@@ -67,7 +68,11 @@ export function createFiberFromTypeAndProps(
   pendingProps: any
 ): Fiber {
   let fiberTag: WorkTag = IndeterminateComponent
-  if (isStr(type)) {
+  if (isFn(type)) {
+    if (type.prototype.isReactComponent) {
+      fiberTag = ClassComponent
+    }
+  } else if (isStr(type)) {
     fiberTag = HostComponent
   } else if (type === REACT_ELEMENT_TYPE) {
     fiberTag = Fragment

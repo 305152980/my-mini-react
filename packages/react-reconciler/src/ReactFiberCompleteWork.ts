@@ -1,5 +1,11 @@
 import { type Fiber } from './ReactInternalTypes'
-import { HostRoot, HostComponent, HostText, Fragment } from './ReactWorkTags'
+import {
+  HostRoot,
+  HostComponent,
+  HostText,
+  Fragment,
+  ClassComponent,
+} from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
 
 export function completeWork(
@@ -10,6 +16,7 @@ export function completeWork(
   switch (workInProgress.tag) {
     case HostRoot:
     case Fragment:
+    case ClassComponent:
       return null
     case HostComponent:
       // 1、创建真实 DOM 节点。
