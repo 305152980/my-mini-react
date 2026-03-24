@@ -15,6 +15,10 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@src': REACT_SRC,
       '@my-mini-react/shared': resolve(PROJECT_ROOT, 'packages/shared'),
+      '@my-mini-react/react-reconciler': resolve(
+        PROJECT_ROOT,
+        'packages/react-reconciler'
+      ),
     },
     // 自动补全文件扩展名，导入时可省略.ts/.js等后缀
     extensions: ['.ts', '.js', '.mjs', '.json'],

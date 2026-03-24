@@ -9,6 +9,7 @@ import {
 } from './ReactWorkTags'
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber'
 import { isStr, isNum } from '@my-mini-react/shared/utils'
+import { renderWithHooks } from './ReactFiberHook'
 
 // 1、处理当前 Fiber 节点。
 // 2、返回子 Fiber 节点。
@@ -90,7 +91,7 @@ function updateFunctionComponent(
   workInProgress: Fiber
 ): Fiber | null {
   const { type, pendingProps } = workInProgress
-  const children = type(pendingProps)
+  const children = renderWithHooks(current, workInProgress, type, pendingProps)
   reconcileChildren(current, workInProgress, children)
   return workInProgress.child
 }

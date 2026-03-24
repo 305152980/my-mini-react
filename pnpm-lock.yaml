@@ -87,6 +87,9 @@ importers:
 
   packages/react:
     dependencies:
+      '@my-mini-react/react-reconciler':
+        specifier: workspace:*
+        version: link:../react-reconciler
       '@my-mini-react/shared':
         specifier: workspace:*
         version: link:../shared

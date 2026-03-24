@@ -6,7 +6,8 @@
     "baseUrl": ".", // 解析非相对模块的基础路径，保持与根目录一致，适配 monorepo 内部结构
     "paths": {
       "@src/*": ["src/*"], // 解析 @src 别名到当前包的 src 目录，保持与根目录一致，适配 monorepo 内部结构
-      "@my-mini-react/shared/*": ["../shared/*"] // 解析 @my-mini-react/shared 别名到 monorepo 内部 shared 包，适配 monorepo 内部结构
+      "@my-mini-react/shared/*": ["../shared/*"], // 解析 @my-mini-react/shared 别名到 monorepo 内部 shared 包，适配 monorepo 内部结构
+      "@my-mini-react/react-reconciler/*": ["../react-reconciler/*"] // 解析 @my-mini-react/react-reconciler 别名到 monorepo 内部 react-reconciler 包，适配 monorepo 内部结构
     }
   },
   "include": ["./**/*"], // 包含当前包下所有文件（TS/JS/Vue等），确保类型检查覆盖整个包的源码

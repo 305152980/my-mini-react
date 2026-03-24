@@ -24,7 +24,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@my-mini-react/shared": "workspace:*"
+    "@my-mini-react/shared": "workspace:*",
+    "@my-mini-react/react-reconciler": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
