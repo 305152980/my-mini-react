@@ -1,10 +1,10 @@
 import { type ReactNodeList } from '@my-mini-react/shared/ReactTypes'
-import { createFiberRoot } from '@my-mini-react/react-reconciler/src/ReactFiberRoot'
-import type {
-  Container,
-  FiberRoot,
-} from '@my-mini-react/react-reconciler/src/ReactInternalTypes'
-import { updateContainer } from '@my-mini-react/react-reconciler/src/ReactFiberReconciler'
+import {
+  createFiberRoot,
+  updateContainer,
+  type Container,
+  type FiberRoot,
+} from '@my-mini-react/react-reconciler'
 
 type RootType = {
   _internalRoot: FiberRoot

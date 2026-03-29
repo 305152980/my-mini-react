@@ -85,6 +85,34 @@ importers:
         specifier: 6.1.1
         version: 6.1.1(typescript@5.9.3)(vite@7.3.1(@types/node@25.4.0))
 
+  examples:
+    dependencies:
+      '@my-mini-react/react':
+        specifier: workspace:*
+        version: link:../packages/react
+      '@my-mini-react/react-dom':
+        specifier: workspace:*
+        version: link:../packages/react-dom
+      '@my-mini-react/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.28
+        version: 18.3.28
+      '@types/react-dom':
+        specifier: ^18.3.7
+        version: 18.3.7(@types/react@18.3.28)
+      '@vitejs/plugin-react':
+        specifier: 5.1.4
+        version: 5.1.4(vite@7.3.1(@types/node@25.4.0))
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: 7.3.1
+        version: 7.3.1(@types/node@25.4.0)
+
   packages/react:
     dependencies:
       '@my-mini-react/react-reconciler':

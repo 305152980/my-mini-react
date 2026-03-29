@@ -12,11 +12,7 @@ export default defineConfig(({ mode }) => ({
   // 模块解析配置
   resolve: {
     // 路径别名
-    alias: {
-      '@src': REACT_RECONCILER_SRC,
-      '@my-mini-react/shared': resolve(PROJECT_ROOT, 'packages/shared'),
-      '@my-mini-react/scheduler': resolve(PROJECT_ROOT, 'packages/scheduler'),
-    },
+    alias: {},
     // 自动补全文件扩展名，导入时可省略.ts/.js等后缀
     extensions: ['.ts', '.js', '.mjs', '.json'],
   },

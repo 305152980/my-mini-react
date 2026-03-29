@@ -15,6 +15,11 @@
       "types": "./index.ts",
       "import": "./index.ts",
       "default": "./index.ts"
+    },
+    "./client": {
+      "types": "./client.ts",
+      "import": "./client.ts",
+      "default": "./client.ts"
     }
   },
   "scripts": {

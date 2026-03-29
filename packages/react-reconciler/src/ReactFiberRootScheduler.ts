@@ -1,5 +1,4 @@
-import { Scheduler } from '@my-mini-react/scheduler'
-import { NormalPriority } from '@my-mini-react/scheduler/src/SchedulerPriorities'
+import { Scheduler, NormalPriority } from '@my-mini-react/scheduler'
 import { type FiberRoot } from './ReactInternalTypes'
 import { performConcurrentWorkOnRoot } from './ReactFiberWorkLoop'
 

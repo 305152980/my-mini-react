@@ -1,7 +1,5 @@
-import ReactDOM from '@src/client/ReactDOMRoot'
-
-export { ReactDOM }
+import { createRoot } from './src/client/ReactDOMRoot'
 
 export default {
-  createRoot: ReactDOM.createRoot,
+  createRoot,
 }

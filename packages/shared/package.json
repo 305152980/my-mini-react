@@ -7,6 +7,28 @@
   "author": "",
   "license": "MIT",
   "private": true,
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./utils": {
+      "types": "./utils.ts",
+      "import": "./utils.ts",
+      "default": "./utils.ts"
+    },
+    "./ReactTypes": {
+      "types": "./ReactTypes.ts",
+      "import": "./ReactTypes.ts",
+      "default": "./ReactTypes.ts"
+    },
+    "./ReactSymbols": {
+      "types": "./ReactSymbols.ts",
+      "import": "./ReactSymbols.ts",
+      "default": "./ReactSymbols.ts"
+    }
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   }
