@@ -1,0 +1,28 @@
+{
+  "name": "examples",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@my-mini-react/shared": "workspace:*",
+    "@my-mini-react/react": "workspace:*",
+    "@my-mini-react/react-dom": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "5.1.4",
+    "typescript": "^5.9.3",
+    "vite": "7.3.1"
+  }
+}
