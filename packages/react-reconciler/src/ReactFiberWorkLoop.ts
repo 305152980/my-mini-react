@@ -17,10 +17,18 @@ let executionContext: ExecutionContext = NoContext
 let workInProgress: Fiber | null = null
 let workInProgressRoot: FiberRoot | null = null
 
-export function scheduleUpdateOnFiber(root: FiberRoot, fiber: Fiber): void {
+export function scheduleUpdateOnFiber(
+  root: FiberRoot,
+  fiber: Fiber,
+  isSync?: boolean
+): void {
   workInProgressRoot = root
   workInProgress = fiber
-  ensureRootIsScheduled(root)
+  if (isSync) {
+    queueMicrotask(() => performConcurrentWorkOnRoot(root))
+  } else {
+    ensureRootIsScheduled(root)
+  }
 }
 
 export function performConcurrentWorkOnRoot(root: FiberRoot): void {

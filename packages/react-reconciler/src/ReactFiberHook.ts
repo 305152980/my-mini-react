@@ -1,3 +1,4 @@
+import { isFn } from '@my-mini-react/shared/utils'
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
 import { HostRoot } from './ReactWorkTags'
@@ -97,7 +98,7 @@ function dispatchReducerAction<S, I, A>(
   // 在真实的生产环境 React 源码中，绝对不会这样写。
   fiber.alternate = { ...fiber }
   const root = getRootForUpdateFiber(fiber) as FiberRoot
-  scheduleUpdateOnFiber(root, fiber)
+  scheduleUpdateOnFiber(root, fiber, true)
 }
 
 export function useReducer<S, I, A>(
@@ -125,4 +126,15 @@ export function useReducer<S, I, A>(
     reducer
   )
   return [hook.memoizedState, dispatch]
+}
+
+type SetStateAction<S> = S | ((prevState: S) => S)
+export function useState<S>(
+  initialState: S | (() => S)
+): [S, Dispatch<SetStateAction<S>>] {
+  const init = isFn(initialState) ? (initialState as () => S)() : initialState
+  return useReducer(
+    (s: S, a: SetStateAction<S>) => (isFn(a) ? (a as any)(s) : a),
+    init
+  )
 }
