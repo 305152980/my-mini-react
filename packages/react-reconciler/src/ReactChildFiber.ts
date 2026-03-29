@@ -10,9 +10,8 @@ type ChildReconciler = (
   newChild: any
 ) => Fiber | null
 
-export const mountChildFibers: ChildReconciler = createChildReconciler(true)
-export const reconcileChildFibers: ChildReconciler =
-  createChildReconciler(false)
+export const mountChildFibers: ChildReconciler = createChildReconciler(false)
+export const reconcileChildFibers: ChildReconciler = createChildReconciler(true)
 
 function createChildReconciler(
   shouldTrackSideEffects: boolean

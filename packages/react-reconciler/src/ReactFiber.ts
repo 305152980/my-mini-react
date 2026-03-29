@@ -93,7 +93,7 @@ export function createFiberFromTypeAndProps(
  * @returns 可用于渲染的 Fiber 节点
  */
 export function createFiberFromElement(element: ReactElement): Fiber {
-  const { type, key, pendingProps } = element
+  const { type, key, props: pendingProps } = element
   const fiber = createFiberFromTypeAndProps(type, key, pendingProps)
   return fiber
 }
