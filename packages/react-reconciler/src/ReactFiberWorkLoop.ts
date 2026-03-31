@@ -17,6 +17,11 @@ let executionContext: ExecutionContext = NoContext
 let workInProgress: Fiber | null = null
 let workInProgressRoot: FiberRoot | null = null
 
+/**
+ * 从任意 Fiber 节点出发，找到其所属的 FiberRoot，并触发整棵树的渲染。
+ * 这是 React 更新调度的入口点之一。
+ * @param fiber - 触发更新的起始 Fiber 节点。
+ */
 export function scheduleUpdateOnFiber(
   root: FiberRoot,
   fiber: Fiber,
@@ -71,6 +76,8 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   const current = unitOfWork.alternate
   // 1、beginWork。
   let next = beginWork(current, unitOfWork)
+  // 把 pendingProps 赋值给 memoizedProps，表示这个 Fiber 已经完成了 props 的准备工作。
+  unitOfWork.memoizedProps = unitOfWork.pendingProps
   if (next === null) {
     // 2、completeWork。
     completeUnitOfWork(unitOfWork)
@@ -100,8 +107,13 @@ function commitRoot(root: FiberRoot): void {
   // 1、commit 阶段开始。
   const previousExecutionContext = executionContext
   executionContext |= CommitContext
+
   // 2、mutation 阶段：渲染 DOM 树。
-  commitMutationEffects(root, root.finishedWork as Fiber)
+  const finishedWork = root.finishedWork as Fiber
+  root.finishedWork = null
+  commitMutationEffects(root, finishedWork)
+  root.current = finishedWork
+
   // 3、commit 阶段结束。
   executionContext = previousExecutionContext
   workInProgressRoot = null

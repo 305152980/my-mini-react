@@ -1,6 +1,10 @@
 import type { Fiber } from './ReactInternalTypes'
 import { Placement } from './ReactFiberFlags'
-import { createFiberFromElement, createFiberFromText } from './ReactFiber'
+import {
+  createFiberFromElement,
+  createFiberFromText,
+  createWorkInProgress,
+} from './ReactFiber'
 import { REACT_ELEMENT_TYPE } from '@my-mini-react/shared/ReactSymbols'
 import { isArray } from '@my-mini-react/shared/utils'
 
@@ -22,11 +26,33 @@ function createChildReconciler(
     }
     return newFiber
   }
+  function useFiber(fiber: Fiber, pendingProps: any): Fiber {
+    const clone = createWorkInProgress(fiber, pendingProps)
+    clone.index = 0
+    clone.sibling = null
+    return clone
+  }
   function reconcileSingleElement(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
     newChild: any
   ): Fiber {
+    // 节点复用的条件：1. 新旧节点的层级相同 2. 新旧节点 key 相同 3. 新旧节点类型相同。
+    let child = currentFirstChild
+    while (child !== null) {
+      if (child.key === newChild.key) {
+        if (child.type === newChild.type) {
+          // TODO 删除 child 后面的节点。
+          const existing = useFiber(child, newChild.props)
+          existing.return = returnFiber
+          return existing
+        }
+        break
+      } else {
+        // TODO 删除单个节点。
+      }
+      child = child.sibling
+    }
     let createdFiber = createFiberFromElement(newChild)
     createdFiber.return = returnFiber
     return createdFiber

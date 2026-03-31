@@ -94,9 +94,6 @@ function dispatchReducerAction<S, I, A>(
   action: A
 ): void {
   hook.memoizedState = reducer(hook.memoizedState, action)
-  // TODO 不知道这行代码的作用是什么。
-  // 在真实的生产环境 React 源码中，绝对不会这样写。
-  fiber.alternate = { ...fiber }
   const root = getRootForUpdateFiber(fiber) as FiberRoot
   scheduleUpdateOnFiber(root, fiber, true)
 }

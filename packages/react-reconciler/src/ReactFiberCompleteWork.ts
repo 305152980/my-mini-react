@@ -21,15 +21,19 @@ export function completeWork(
     case FunctionComponent:
       return null
     case HostComponent:
-      // 1、创建真实 DOM 节点。
-      const { type } = workInProgress
-      const instance = document.createElement(type)
-      // 2、初始化 DOM 节点的属性。
-      finalizeInitialChildren(instance, newProps)
-      // 3、把子 DOM 节点挂载到父 DOM 节点上。
-      appendAllChildren(instance, workInProgress)
-      // 4、把 DOM 节点保存在 Fiber 的 stateNode 上。
-      workInProgress.stateNode = instance
+      if (current !== null) {
+        updateHostComponent(current, workInProgress, newProps)
+      } else {
+        // 1、创建真实 DOM 节点。
+        const { type } = workInProgress
+        const instance = document.createElement(type)
+        // 2、初始化 DOM 节点的属性。
+        finalizeInitialChildren(instance, null, newProps)
+        // 3、把子 DOM 节点挂载到父 DOM 节点上。
+        appendAllChildren(instance, workInProgress)
+        // 4、把 DOM 节点保存在 Fiber 的 stateNode 上。
+        workInProgress.stateNode = instance
+      }
       return null
     case HostText:
       workInProgress.stateNode = document.createTextNode(newProps)
@@ -41,9 +45,28 @@ export function completeWork(
   )
 }
 
-function finalizeInitialChildren(domElement: HTMLElement, props: any): void {
-  for (const propKey in props) {
-    const nextProp = props[propKey]
+function finalizeInitialChildren(
+  domElement: HTMLElement,
+  prevProps: any,
+  nextProps: any
+): void {
+  for (const propKey in prevProps) {
+    const prevProp = prevProps[propKey]
+    if (propKey === 'children') {
+      if (
+        (isStr(prevProp) || isNum(prevProp)) &&
+        !(isStr(nextProps.children) || isNum(nextProps.children))
+      ) {
+        domElement.textContent = ''
+      }
+    } else {
+      if (!(propKey in nextProps)) {
+        ;(domElement as any)[propKey] = ''
+      }
+    }
+  }
+  for (const propKey in nextProps) {
+    const nextProp = nextProps[propKey]
     if (propKey === 'children') {
       if (isStr(nextProp) || isNum(nextProp)) {
         domElement.textContent = nextProp + ''
@@ -75,4 +98,19 @@ function appendAllChildren(parent: HTMLElement, workInProgress: Fiber): void {
 
 export function isHost(fiber: Fiber): boolean {
   return fiber.tag === HostComponent || fiber.tag === HostText
+}
+
+function updateHostComponent(
+  current: Fiber,
+  workInProgress: Fiber,
+  newProps: any
+): void {
+  if (current.memoizedProps === newProps) {
+    return
+  }
+  finalizeInitialChildren(
+    workInProgress.stateNode,
+    current.memoizedProps,
+    newProps
+  )
 }
