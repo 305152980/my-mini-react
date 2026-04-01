@@ -1,5 +1,5 @@
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
-import { Placement } from './ReactFiberFlags'
+import { Placement, ChildDeletion } from './ReactFiberFlags'
 import { HostComponent, HostRoot, HostText } from './ReactWorkTags'
 import { isHost } from './ReactFiberCompleteWork'
 
@@ -27,6 +27,18 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
   if (flags & Placement) {
     commitPlacement(finishedWork)
     finishedWork.flags &= ~Placement
+  }
+  if (flags & ChildDeletion) {
+    // 获取父 DOM 节点对应的 Fiber 节点。
+    const parentFiber = isHostParent(finishedWork)
+      ? finishedWork
+      : getHostParentFiber(finishedWork)
+    // 获取父 DOM 节点。
+    const parentDom =
+      parentFiber.stateNode.containerInfo || parentFiber.stateNode
+    commitDeletions(finishedWork.deletions!, parentDom)
+    finishedWork.flags &= ~ChildDeletion
+    finishedWork.deletions = null
   }
 }
 
@@ -63,4 +75,23 @@ function getHostParentFiber(fiber: Fiber): Fiber {
 
 function isHostParent(fiber: Fiber): boolean {
   return fiber.tag === HostComponent || fiber.tag === HostRoot
+}
+
+function commitDeletions(
+  deletions: Array<Fiber>,
+  parentDom: Element | Document | DocumentFragment
+): void {
+  deletions.forEach(deletion => {
+    parentDom.removeChild(getStateNode(deletion)!)
+  })
+}
+
+function getStateNode(fiber: Fiber): Element | Text | void {
+  let node = fiber
+  while (1) {
+    if (isHost(node) && node.stateNode) {
+      return node.stateNode
+    }
+    node = node.child as Fiber
+  }
 }

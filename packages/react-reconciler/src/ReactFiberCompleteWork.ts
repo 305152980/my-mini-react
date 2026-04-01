@@ -46,7 +46,7 @@ export function completeWork(
 }
 
 function finalizeInitialChildren(
-  domElement: HTMLElement,
+  domElement: Element,
   prevProps: any,
   nextProps: any
 ): void {
@@ -77,7 +77,7 @@ function finalizeInitialChildren(
   }
 }
 
-function appendAllChildren(parent: HTMLElement, workInProgress: Fiber): void {
+function appendAllChildren(parent: Element, workInProgress: Fiber): void {
   let nodeFiber = workInProgress.child
   while (nodeFiber !== null) {
     if (isHost(nodeFiber)) {

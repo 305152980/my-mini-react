@@ -1,19 +1,8 @@
-// import ReactDOM from '@my-mini-react/react-dom/client'
-// import type { ReactNodeList } from '@my-mini-react/shared/ReactTypes'
+// // 测试普通 jsx 树。
+// import  './test-001.tsx'
 
-// ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-//   (
-//     <h1>
-//       <h2>hello world</h2>
-//       <h2>hello world</h2>
-//     </h1>
-//   ) as unknown as ReactNodeList
-// )
+// // 测试带有 useState 的函数组件。
+// import './test-002.tsx'
 
-import ReactDOM from '@my-mini-react/react-dom/client'
-import type { ReactNodeList } from '@my-mini-react/shared/ReactTypes'
-import { FunctionComponent } from './FunctionComponent.jsx'
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  (<FunctionComponent />) as unknown as ReactNodeList
-)
+// 测试节点删除。
+import './test-003.tsx'

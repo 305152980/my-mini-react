@@ -53,6 +53,7 @@ const FiberNode: FiberCtor = function (
   this.memoizedState = null
   this.flags = NoFlags
   this.alternate = null
+  this.deletions = null
 } as unknown as FiberCtor
 
 /**

@@ -44,6 +44,9 @@ export type Fiber = {
 
   // 双缓存机制：指向另一棵 Fiber 树的对应节点（current <-> workInProgress）
   alternate: Fiber | null
+
+  // 删除的子节点列表（仅在协调阶段使用，标记需要删除的节点，提交阶段会根据它们执行删除操作）
+  deletions: Array<Fiber> | null
 }
 
 // 挂载容器类型：React 应用挂载的 DOM 根节点

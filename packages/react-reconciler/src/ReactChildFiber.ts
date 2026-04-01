@@ -1,5 +1,5 @@
 import type { Fiber } from './ReactInternalTypes'
-import { Placement } from './ReactFiberFlags'
+import { Placement, ChildDeletion } from './ReactFiberFlags'
 import {
   createFiberFromElement,
   createFiberFromText,
@@ -32,6 +32,31 @@ function createChildReconciler(
     clone.sibling = null
     return clone
   }
+  function deleteChild(returnFiber: Fiber, childToDelete: Fiber): void {
+    if (!shouldTrackSideEffects) {
+      return
+    }
+    const deletions = returnFiber.deletions
+    if (deletions === null) {
+      returnFiber.deletions = [childToDelete]
+      returnFiber.flags |= ChildDeletion
+    } else {
+      deletions.push(childToDelete)
+    }
+  }
+  function deleteRemainingChildren(
+    returnFiber: Fiber,
+    currentFirstChild: Fiber
+  ): void {
+    if (!shouldTrackSideEffects) {
+      return
+    }
+    let childToDelete: Fiber | null = currentFirstChild
+    while (childToDelete !== null) {
+      deleteChild(returnFiber, childToDelete)
+      childToDelete = childToDelete.sibling
+    }
+  }
   function reconcileSingleElement(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
@@ -42,14 +67,20 @@ function createChildReconciler(
     while (child !== null) {
       if (child.key === newChild.key) {
         if (child.type === newChild.type) {
-          // TODO 删除 child 后面的节点。
+          // 删除 child 后面的节点。
+          if (child.sibling !== null) {
+            deleteRemainingChildren(returnFiber, child.sibling)
+          }
           const existing = useFiber(child, newChild.props)
           existing.return = returnFiber
           return existing
         }
+        // 删除 child 及其后面的节点。
+        deleteRemainingChildren(returnFiber, child)
         break
       } else {
-        // TODO 删除单个节点。
+        // 删除单个节点。
+        deleteChild(returnFiber, child)
       }
       child = child.sibling
     }
