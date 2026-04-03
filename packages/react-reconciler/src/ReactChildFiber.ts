@@ -8,6 +8,7 @@ import {
 import { REACT_ELEMENT_TYPE } from '@my-mini-react/shared/ReactSymbols'
 import { isArray } from '@my-mini-react/shared/utils'
 import { HostText } from './ReactWorkTags'
+import { type ReactElement } from '@my-mini-react/shared/ReactTypes'
 
 type ChildReconciler = (
   returnFiber: Fiber,
@@ -131,22 +132,72 @@ function createChildReconciler(
       return existing
     }
   }
+  function updateElement(
+    returnFiber: Fiber,
+    current: Fiber | null,
+    element: ReactElement
+  ): Fiber {
+    const elementType = element.type
+    if (current !== null) {
+      if (current.elementType === elementType) {
+        const existing = useFiber(current, element.props)
+        existing.return = returnFiber
+        return existing
+      }
+    }
+    const created = createFiberFromElement(element)
+    created.return = returnFiber
+    return created
+  }
   function updateSlot(
     returnFiber: Fiber,
     oldFiber: Fiber | null,
     newChild: any
   ): Fiber | null {
-    // 判断节点是否可以复用。
     const key = oldFiber !== null ? oldFiber.key : null
     if (isText(newChild)) {
       if (key !== null) {
-        // 新节点是文本，但是老节点存在且不是文本。因为老节点的 key 存在，文本节点的 key 不存在。
+        // 新节点是文本，但是老节点存在且不是文本。（因为老节点的 key 存在，文本节点的 key 不存在。）
         return null
       }
-      // 新节点是文本，老节点可能是文本。有可能可以复用。
+      // 新节点是文本，老节点可能是文本或者说不存在。
       return updateTextNode(returnFiber, oldFiber, newChild + '')
     }
-    // TODO 20260401
+    if (typeof newChild === 'object' && newChild !== null) {
+      if (newChild.key === key) {
+        // 如果老节点存在：新老节点的 key 相同。
+        // 如果老节点不存在：新节点的 key 为 null。
+        return updateElement(returnFiber, oldFiber, newChild)
+      } else {
+        return null
+      }
+    }
+    return null
+  }
+  function placeChild(
+    newFiber: Fiber,
+    lastPlacedIndex: number,
+    newIndex: number
+  ): number {
+    newFiber.index = newIndex
+    if (!shouldTrackSideEffects) {
+      return lastPlacedIndex
+    }
+    const current = newFiber.alternate
+    if (current !== null) {
+      const oldIndex = current.index
+      if (oldIndex < lastPlacedIndex) {
+        // 移动旧 Dom 节点。
+        newFiber.flags |= Placement
+        return lastPlacedIndex
+      } else {
+        return oldIndex
+      }
+    } else {
+      // 新增新 Dom 节点。
+      newFiber.flags |= Placement
+      return lastPlacedIndex
+    }
   }
   function reconcileChildrenArray(
     returnFiber: Fiber,
@@ -156,14 +207,54 @@ function createChildReconciler(
     let resultFirstChild: Fiber | null = null
     let previousNewFiber: Fiber | null = null
     let oldFiber = currentFirstChild
+    let nextOldFiber: Fiber | null = null // oldFiber.sibling
     let newIdx = 0
+    // 上一次复用节点在旧列表中的最大位置索引。
+    let lastPlacedIndex = 0
     // 1、从左往右遍历，按位置比较，如果可以复用，就复用；如果不可以复用，就退出本轮。
     for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
+      // 分支 1：如果旧节点的索引大于当前新节点的索引，说明旧的节点“跑太快了”，当前索引位置没有对应的旧节点可以复用。
+      // 分支 2：这是正常情况，索引对齐。
+      // oldFiber.index > newIdx 这种情况的出现，本质上是因为“旧链表”和“新数组”在结构上出现了错位。
+      // 最核心的原因只有一个：旧链表中存在“空槽”（即由 null 或 false 占位但未生成 Fiber 的位置）。
+      if (oldFiber.index > newIdx) {
+        // oldFiber 跑太快了，先将 oldFiber 缓存起来，并设置 nextOldFiber 为 null。
+        nextOldFiber = oldFiber
+        // 将 oldFiber 设为 null。这意味着在接下来的 updateSlot 调用中，React 会认为这里没有旧节点。
+        oldFiber = null
+      } else {
+        nextOldFiber = oldFiber.sibling
+      }
+      // 当 oldFiber 为 null 时，updateSlot 通常会返回一个【新建的 Fiber 节点】（除非遇到非法的节点类型）。
+      // 这在 React 的 Diff 算法中对应的是 “新增节点” 的逻辑。
       const newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx])
+      if (newFiber === null) {
+        if (oldFiber === null) {
+          // 将 nextOldFiber 赋值给 oldFiber，以便在下一轮循环中继续尝试匹配后续的新节点。
+          oldFiber = nextOldFiber
+        }
+        break
+      }
+      if (shouldTrackSideEffects) {
+        if (oldFiber && newFiber.alternate === null) {
+          deleteChild(returnFiber, oldFiber)
+        }
+      }
+      lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+      if (previousNewFiber === null) {
+        resultFirstChild = newFiber
+      } else {
+        previousNewFiber.sibling = newFiber
+      }
+      previousNewFiber = newFiber
+      oldFiber = nextOldFiber
     }
-    // TODO 20260401
     // Vue 1.2、从右往左遍历，按位置比较，如果可以复用，就复用；如果不可以复用，就退出本轮。
     // 2.1、如果老节点还在，新节点没了，就删除老节点。
+    if (newIdx === newChildren.length) {
+      deleteRemainingChildren(returnFiber, oldFiber!)
+      return resultFirstChild
+    }
     // 2.2、如果新节点还在，老节点没了，就新增新节点。
     if (oldFiber === null) {
       for (; newIdx < newChildren.length; newIdx++) {
@@ -171,10 +262,7 @@ function createChildReconciler(
         if (newFiber === null) {
           continue
         }
-        if (shouldTrackSideEffects) {
-          newFiber.flags |= Placement
-        }
-        newFiber.index = newIdx
+        lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
         if (previousNewFiber === null) {
           resultFirstChild = newFiber
         } else {
@@ -185,6 +273,7 @@ function createChildReconciler(
       return resultFirstChild
     }
     // 3、如果新老节点都在......
+    // TODO
     return resultFirstChild
   }
   function reconcileChildFibers(

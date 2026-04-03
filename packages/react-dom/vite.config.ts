@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     // 路径别名
     alias: {},
     // 自动补全文件扩展名，导入时可省略.ts/.js等后缀
-    extensions: ['.ts', '.js', '.mjs', '.json'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
   },
 
   // 构建核心配置 - 库模式打包

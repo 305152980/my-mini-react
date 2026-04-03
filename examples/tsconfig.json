@@ -5,12 +5,7 @@
     // "declaration": true, // 生成类型声明文件（.d.ts），关键：供其他包识别类型，尤其在 monorepo 内部依赖时非常重要
     "baseUrl": ".", // 解析非相对模块的基础路径，保持与根目录一致，适配 monorepo 内部结构
     "paths": {
-      "@src/*": ["src/*"], // 解析 @src 别名到当前包的 src 目录，保持与根目录一致，适配 monorepo 内部结构
-      "@my-mini-react/shared": ["../packages/shared/index.ts"],
-      "@my-mini-react/shared/*": ["../packages/shared/*"],
-      "@my-mini-react/react": ["../packages/react/index.ts"],
-      "@my-mini-react/react-dom": ["../packages/react-dom/index.ts"],
-      "@my-mini-react/react-dom/*": ["../packages/react-dom/*"]
+      "@src/*": ["src/*"] // 解析 @src 别名到当前包的 src 目录，保持与根目录一致，适配 monorepo 内部结构
     }
   },
   "include": ["./**/*"], // 包含当前包下所有文件（TS/JS/Vue等），确保类型检查覆盖整个包的源码

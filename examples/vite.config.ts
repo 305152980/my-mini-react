@@ -15,7 +15,7 @@ export default defineConfig({
       '@src': EXAMPLES_SRC,
     },
     // 自动补全文件扩展名，导入时可省略.ts/.js等后缀
-    extensions: ['.ts', '.js', '.mjs', '.json'],
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
   },
   plugins: [react()],
 })
