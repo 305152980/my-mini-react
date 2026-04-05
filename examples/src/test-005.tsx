@@ -6,7 +6,7 @@ import { useState } from '@my-mini-react/react'
 
 function FunctionComponent(): React.ReactNode {
   const [count, setCount] = useState(0)
-  const arr = count % 2 === 0 ? [0, 1, 2, 3, 4] : [0, 1, 2, 4]
+  const arr = count % 2 === 0 ? [0, 1, 2, 3, 4] : [0, 2, 1, 4]
 
   setTimeout(() => {
     setCount(value => value + 1)
