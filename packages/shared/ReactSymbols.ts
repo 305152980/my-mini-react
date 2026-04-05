@@ -1,3 +1,4 @@
+// 当一个 JavaScript 对象的 $$typeof 属性等于 REACT_ELEMENT_TYPE 时，React 就认定：“这是一个标准的 React 元素（即 JSX 标签）”。
 export const REACT_ELEMENT_TYPE: symbol = Symbol.for('react.element')
 export const REACT_PORTAL_TYPE: symbol = Symbol.for('react.portal')
 export const REACT_FRAGMENT_TYPE: symbol = Symbol.for('react.fragment')
