@@ -6,18 +6,17 @@ import { useState } from '@my-mini-react/react'
 
 function FunctionComponent(): React.ReactNode {
   const [count, setCount] = useState(0)
-  const arr = count % 2 === 0 ? [0, 1, 2, 3, 4] : [0, 2, 5, 1, 4]
 
   setTimeout(() => {
     setCount(value => value + 1)
   }, 3000)
 
   return (
-    <ul>
-      {arr.map(item => (
-        <li key={'li' + item}>{item}</li>
-      ))}
-    </ul>
+    <div>
+      {count % 2 === 0 ? <h1>null</h1> : null}
+      {count % 2 === 0 ? <h2>undefined</h2> : undefined}
+      {count % 2 === 0 ? <h3>false</h3> : false}
+    </div>
   )
 }
 

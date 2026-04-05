@@ -42,12 +42,12 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
   }
 }
 
-function getHostSibling(fiber: Fiber): Element | Text | void {
+function getHostSibling(fiber: Fiber): Element | Text | null {
   let node = fiber
   sibling: while (1) {
     while (node.sibling === null) {
       if (node.return === null || isHostParent(node.return)) {
-        return
+        return null
       }
       node = node.return
     }
@@ -66,10 +66,12 @@ function getHostSibling(fiber: Fiber): Element | Text | void {
       return node.stateNode
     }
   }
+  // 这行代码在运行时永远不会被执行（因为是死循环），但它是为了满足 TypeScript 的类型检查。
+  return null
 }
 function insertOrAppendPlacementNode(
   node: Fiber,
-  before: Element | Text | void,
+  before: Element | Text | null,
   parent: Element | Document | DocumentFragment
 ): void {
   if (before) {
@@ -80,7 +82,6 @@ function insertOrAppendPlacementNode(
 }
 function commitPlacement(finishedWork: Fiber): void {
   if (finishedWork.stateNode && isHost(finishedWork)) {
-    const domNode = finishedWork.stateNode
     const parentFiber = getHostParentFiber(finishedWork)
     let parentDom = parentFiber.stateNode
     if (parentDom.containerInfo) {

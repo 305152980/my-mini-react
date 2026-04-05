@@ -216,7 +216,14 @@ function createChildReconciler(
     newIdx: number,
     newChild: any
   ): Fiber | null {
-    const key = newChild.key !== null ? newChild.key : newIdx
+    // const key = newChild.key !== null ? newChild.key : newIdx
+    // 如果 newChild 是 null, undefined, boolean, 则直接使用索引作为 key。
+    const key =
+      typeof newChild === 'object' && newChild !== null
+        ? newChild.key !== null
+          ? newChild.key
+          : newIdx
+        : newIdx
     const matchedFiber = existingChildren.get(key) || null
     if (isText(newChild)) {
       return updateTextNode(returnFiber, matchedFiber, newChild + '')
