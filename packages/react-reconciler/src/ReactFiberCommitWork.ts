@@ -42,6 +42,42 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
   }
 }
 
+function getHostSibling(fiber: Fiber): Element | Text | void {
+  let node = fiber
+  sibling: while (1) {
+    while (node.sibling === null) {
+      if (node.return === null || isHostParent(node.return)) {
+        return
+      }
+      node = node.return
+    }
+    node = node.sibling
+    while (!isHost(node)) {
+      if (node.flags & Placement) {
+        continue sibling
+      }
+      if (node.child === null) {
+        continue sibling
+      } else {
+        node = node.child
+      }
+    }
+    if (!(node.flags & Placement)) {
+      return node.stateNode
+    }
+  }
+}
+function insertOrAppendPlacementNode(
+  node: Fiber,
+  before: Element | Text | void,
+  parent: Element | Document | DocumentFragment
+): void {
+  if (before) {
+    parent.insertBefore(getStateNode(node)!, before)
+  } else {
+    parent.appendChild(getStateNode(node)!)
+  }
+}
 function commitPlacement(finishedWork: Fiber): void {
   if (finishedWork.stateNode && isHost(finishedWork)) {
     const domNode = finishedWork.stateNode
@@ -50,7 +86,21 @@ function commitPlacement(finishedWork: Fiber): void {
     if (parentDom.containerInfo) {
       parentDom = parentDom.containerInfo
     }
-    parentDom.appendChild(domNode)
+    // 1. 寻找“插入参考点”
+    // 这一步是为了找到在当前 Fiber 之后、下一个即将被渲染的“真实 DOM 兄弟节点”。
+    //
+    // 核心逻辑：
+    // - 如果当前节点后面紧跟着一个已经存在的 DOM 节点（比如复用过来的旧节点），
+    //   那么新节点必须插在这个旧节点的前面，才能保证视觉顺序正确。
+    // - 如果后面没有兄弟节点了（它是最后一个），getHostSibling 会返回 null。
+    const before = getHostSibling(finishedWork)
+    // 2. 执行 DOM 插入
+    // 这是一个“二合一”的操作：
+    // - 情况 A (before 存在): 调用 parentDom.insertBefore(newNode, beforeNode)
+    //   即：把新节点插在“新节点”和“旧节点”之间。
+    // - 情况 B (before 为 null): 调用 parentDom.appendChild(newNode)
+    //   即：后面没东西了，直接把新节点追加到父容器的末尾。
+    insertOrAppendPlacementNode(finishedWork, before, parentDom)
   } else {
     let kid = finishedWork.child
     while (kid !== null) {
