@@ -7,5 +7,8 @@
 // // 测试节点删除。
 // import './test-003'
 
-// 测试初步版本的 DIFF 算法。
-import './test-004'
+// // 测试初步版本的 DIFF 算法。
+// import './test-004'
+
+// 测试进阶版本的 DIFF 算法。
+import './test-005'
