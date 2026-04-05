@@ -177,9 +177,9 @@ function createChildReconciler(
   function placeChild(
     newFiber: Fiber,
     lastPlacedIndex: number,
-    newIndex: number
+    newIdx: number
   ): number {
-    newFiber.index = newIndex
+    newFiber.index = newIdx
     if (!shouldTrackSideEffects) {
       return lastPlacedIndex
     }
@@ -199,6 +199,37 @@ function createChildReconciler(
       return lastPlacedIndex
     }
   }
+  function mapRemainingChildren(oldFiber: Fiber): Map<string | number, Fiber> {
+    const existingChildren = new Map<string | number, Fiber>()
+    let existingChild: Fiber | null = oldFiber
+    while (existingChild !== null) {
+      const key =
+        existingChild.key !== null ? existingChild.key : existingChild.index
+      existingChildren.set(key, existingChild)
+      existingChild = existingChild.sibling
+    }
+    return existingChildren
+  }
+  function updateFromMap(
+    existingChildren: Map<string | number, Fiber>,
+    returnFiber: Fiber,
+    newIdx: number,
+    newChild: any
+  ): Fiber | null {
+    const key = newChild.key !== null ? newChild.key : newIdx
+    const matchedFiber = existingChildren.get(key) || null
+    if (isText(newChild)) {
+      return updateTextNode(returnFiber, matchedFiber, newChild + '')
+    }
+    if (typeof newChild === 'object' && newChild !== null) {
+      switch (newChild.$$typeof) {
+        case REACT_ELEMENT_TYPE:
+          return updateElement(returnFiber, matchedFiber, newChild)
+        // TODO: 如果是其他对象（如 Portal），需要额外处理。
+      }
+    }
+    return null
+  }
   function reconcileChildrenArray(
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
@@ -207,6 +238,7 @@ function createChildReconciler(
     let resultFirstChild: Fiber | null = null
     let previousNewFiber: Fiber | null = null
     let oldFiber = currentFirstChild
+    // 在第一轮 for 循环中，oldFiber 可能会被置为 null。这个时候用 nextOldFiber 来暂存 oldFiber 的值，以便后续恢复 oldFiber 的值。
     let nextOldFiber: Fiber | null = null // oldFiber.sibling
     let newIdx = 0
     // 上一次复用节点在旧列表中的最大位置索引。
@@ -259,6 +291,7 @@ function createChildReconciler(
     if (oldFiber === null) {
       for (; newIdx < newChildren.length; newIdx++) {
         const newFiber = createChild(returnFiber, newChildren[newIdx])
+        // 如果遇到无效的 React 元素（比如 null、false、undefined），就跳过它，继续处理下一个，而不是让整个渲染崩溃。
         if (newFiber === null) {
           continue
         }
@@ -272,8 +305,35 @@ function createChildReconciler(
       }
       return resultFirstChild
     }
-    // 3、如果新老节点都在......
-    // TODO
+    // 2.3、如果新老节点都在。
+    const existingChildren = mapRemainingChildren(oldFiber)
+    for (; newIdx < newChildren.length; newIdx++) {
+      const newFiber = updateFromMap(
+        existingChildren,
+        returnFiber,
+        newIdx,
+        newChildren[newIdx]
+      )
+      // if (newFiber !== null) { 是为了跳过新节点中不合法的节点。
+      if (newFiber !== null) {
+        if (shouldTrackSideEffects) {
+          existingChildren.delete(newFiber.key !== null ? newFiber.key : newIdx)
+        }
+        lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+        if (previousNewFiber === null) {
+          resultFirstChild = newFiber
+        } else {
+          previousNewFiber.sibling = newFiber
+        }
+        previousNewFiber = newFiber
+      }
+    }
+    // 如果新节点已经构建完了，但是 existingChildren 中还有老节点没有被复用，那么就删除它们。
+    if (shouldTrackSideEffects) {
+      existingChildren.forEach(child => {
+        deleteChild(returnFiber, child)
+      })
+    }
     return resultFirstChild
   }
   function reconcileChildFibers(
