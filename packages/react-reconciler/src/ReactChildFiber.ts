@@ -111,6 +111,7 @@ function createChildReconciler(
           const created = createFiberFromElement(newChild)
           created.return = returnFiber
           return created
+        // TODO: 如果 newChild 是其他对象（如 Portal），需要额外处理。
       }
     }
     return null
@@ -164,12 +165,16 @@ function createChildReconciler(
       return updateTextNode(returnFiber, oldFiber, newChild + '')
     }
     if (typeof newChild === 'object' && newChild !== null) {
-      if (newChild.key === key) {
-        // 如果老节点存在：新老节点的 key 相同。
-        // 如果老节点不存在：新节点的 key 为 null。
-        return updateElement(returnFiber, oldFiber, newChild)
-      } else {
-        return null
+      switch (newChild.$$typeof) {
+        case REACT_ELEMENT_TYPE:
+          if (newChild.key === key) {
+            // 如果老节点存在：新老节点的 key 相同。
+            // 如果老节点不存在：新节点的 key 为 null。
+            return updateElement(returnFiber, oldFiber, newChild)
+          } else {
+            return null
+          }
+        // TODO: 如果 newChild 是其他对象（如 Portal），需要额外处理。
       }
     }
     return null
@@ -232,7 +237,7 @@ function createChildReconciler(
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
           return updateElement(returnFiber, matchedFiber, newChild)
-        // TODO: 如果是其他对象（如 Portal），需要额外处理。
+        // TODO: 如果 newChild 是其他对象（如 Portal），需要额外处理。
       }
     }
     return null
