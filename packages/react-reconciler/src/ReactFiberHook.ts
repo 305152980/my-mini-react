@@ -135,3 +135,41 @@ export function useState<S>(
     init
   )
 }
+
+export function areHookInputsEqual(
+  nextDeps: Array<any>,
+  prevDeps: Array<any> | null
+): boolean {
+  if (prevDeps === null) {
+    return false
+  }
+  for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+    if (Object.is(prevDeps[i], nextDeps[i])) {
+      continue
+    }
+    return false
+  }
+  return true
+}
+export function useMemo<T>(
+  nextCreate: () => T,
+  deps: Array<any> | void | null
+): T {
+  const hook: Hook = updateWorkInProgressHook()
+  const nextDeps = deps === undefined ? null : deps
+
+  const prevState = hook.memoizedState
+  if (prevState !== null && nextDeps !== null) {
+    const prevDeps = prevState[1]
+    if (areHookInputsEqual(nextDeps, prevDeps)) {
+      // 1、prevState 有值。
+      // 2、nextDeps 不为 null 且 areHookInputsEqual(nextDeps, prevDeps)。
+      // 1 & 2
+      return prevState[0]
+    }
+  }
+
+  const nextValue = nextCreate()
+  hook.memoizedState = [nextValue, nextDeps]
+  return nextValue
+}
