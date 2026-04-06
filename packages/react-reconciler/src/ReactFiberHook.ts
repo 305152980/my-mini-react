@@ -180,3 +180,11 @@ export function useCallback<T extends Function>(
 ): T {
   return useMemo(() => callback, deps)
 }
+
+export function useRef<T>(initialValue: T): { current: T } {
+  const hook: Hook = updateWorkInProgressHook()
+  if (currentHook === null) {
+    hook.memoizedState = { current: initialValue }
+  }
+  return hook.memoizedState
+}

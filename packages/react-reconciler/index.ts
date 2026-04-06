@@ -5,6 +5,7 @@ import {
   useState,
   useMemo,
   useCallback,
+  useRef,
 } from './src/ReactFiberHook'
 import type { Container, FiberRoot } from './src/ReactInternalTypes'
 
@@ -15,6 +16,7 @@ export {
   useState,
   useMemo,
   useCallback,
+  useRef,
   type FiberRoot,
   type Container,
 }
