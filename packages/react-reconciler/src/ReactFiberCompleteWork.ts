@@ -36,7 +36,19 @@ export function completeWork(
       }
       return null
     case HostText:
-      workInProgress.stateNode = document.createTextNode(newProps)
+      if (current !== null) {
+        // 分支一：更新时，复用已有的文本节点，只更新文本内容。
+        // 把“旧树”（Current Tree）里的真实文本节点，直接赋值给“新树”（WorkInProgress Tree）。
+        workInProgress.stateNode = current.stateNode
+        // 对比“旧的文本内容”（memoizedProps）和“新的文本内容”（pendingProps，代码里赋值给了 newProps）。
+        if (current.memoizedProps !== newProps) {
+          // 直接修改真实 DOM 对象的 nodeValue 属性。
+          workInProgress.stateNode.nodeValue = newProps
+        }
+      } else {
+        // 分支二：初次挂载时，创建新的文本节点。
+        workInProgress.stateNode = document.createTextNode(newProps)
+      }
       return null
     // TODO
   }
