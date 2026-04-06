@@ -95,6 +95,17 @@ function createChildReconciler(
     currentFirstChild: Fiber | null,
     textContent: string
   ): Fiber {
+    if (currentFirstChild !== null && currentFirstChild.tag === HostText) {
+      if (currentFirstChild.sibling !== null) {
+        deleteRemainingChildren(returnFiber, currentFirstChild.sibling)
+      }
+      const existing = useFiber(currentFirstChild, textContent)
+      existing.return = returnFiber
+      return existing
+    }
+    if (currentFirstChild !== null) {
+      deleteRemainingChildren(returnFiber, currentFirstChild)
+    }
     const createdFiber = createFiberFromText(textContent)
     createdFiber.return = returnFiber
     return createdFiber
@@ -364,12 +375,16 @@ function createChildReconciler(
           return placeSingleChild(
             reconcileSingleElement(returnFiber, currentFirstChild, newChild)
           )
+        // TODO: 如果 newChild 是其他对象（如 Portal），需要额外处理。
       }
     }
     if (isArray(newChild)) {
       return reconcileChildrenArray(returnFiber, currentFirstChild, newChild)
     }
-    // TODO
+    // 20260406: 如果 newChild 是其他类型（如 boolean、undefined、function 等），直接标记删除 currentFirstChild 及其后续节点。
+    if (currentFirstChild !== null) {
+      deleteRemainingChildren(returnFiber, currentFirstChild)
+    }
     return null
   }
   return reconcileChildFibers

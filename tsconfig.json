@@ -65,7 +65,10 @@
       "vite/client", // 提供 import.meta.env 等 Vite 特有类型
       "@types/react", // 提供 React 全局类型（如 JSX.Element）
       "@types/react-dom" // 提供 ReactDOM 全局类型（如 ReactDOM.Renderer）
-    ]
+    ],
+
+    // 20260405 忽略 deprecated 警告。
+    "ignoreDeprecations": "6.0"
   },
   "include": [
     // "src/**/*", // 包含 src 下所有 TS/JS/Vue 文件（此配置会导致报错：2026-03-14 注释）
