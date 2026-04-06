@@ -1,6 +1,11 @@
 import { createFiberRoot } from './src/ReactFiberRoot'
 import { updateContainer } from './src/ReactFiberReconciler'
-import { useReducer, useState, useMemo } from './src/ReactFiberHook'
+import {
+  useReducer,
+  useState,
+  useMemo,
+  useCallback,
+} from './src/ReactFiberHook'
 import type { Container, FiberRoot } from './src/ReactInternalTypes'
 
 export {
@@ -9,6 +14,7 @@ export {
   useReducer,
   useState,
   useMemo,
+  useCallback,
   type FiberRoot,
   type Container,
 }

@@ -173,3 +173,10 @@ export function useMemo<T>(
   hook.memoizedState = [nextValue, nextDeps]
   return nextValue
 }
+
+export function useCallback<T extends Function>(
+  callback: T,
+  deps: Array<any> | void | null
+): T {
+  return useMemo(() => callback, deps)
+}

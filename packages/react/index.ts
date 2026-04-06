@@ -2,4 +2,9 @@ export { REACT_FRAGMENT_TYPE as Fragment } from '@my-mini-react/shared/ReactSymb
 
 export { Component } from './src/ReactBaseClasses'
 
-export { useReducer, useState, useMemo } from '@my-mini-react/react-reconciler'
+export {
+  useReducer,
+  useState,
+  useMemo,
+  useCallback,
+} from '@my-mini-react/react-reconciler'

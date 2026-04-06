@@ -19,5 +19,8 @@
 // // 测试子节点为 bull、undefined、布尔值。
 // import './test-006'
 
-// 测试 useMemo。
-import './test-008'
+// // 测试 useMemo。
+// import './test-008'
+
+// 测试 useCallback。
+import './test-009'
