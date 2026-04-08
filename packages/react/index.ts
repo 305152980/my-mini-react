@@ -8,4 +8,6 @@ export {
   useMemo,
   useCallback,
   useRef,
+  useEffect,
+  useLayoutEffect,
 } from '@my-mini-react/react-reconciler'

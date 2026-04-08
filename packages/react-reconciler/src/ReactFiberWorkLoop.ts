@@ -3,7 +3,11 @@ import { ensureRootIsScheduled } from './ReactFiberRootScheduler'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { completeWork } from './ReactFiberCompleteWork'
-import { commitMutationEffects } from './ReactFiberCommitWork'
+import {
+  commitMutationEffects,
+  flushPassiveEffects,
+} from './ReactFiberCommitWork'
+import { Scheduler, NormalPriority } from '@my-mini-react/scheduler'
 
 type ExecutionContext = number
 
@@ -104,17 +108,24 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
 }
 
 function commitRoot(root: FiberRoot): void {
-  // 1、commit 阶段开始。
+  // commit 阶段开始。
   const previousExecutionContext = executionContext
   executionContext |= CommitContext
 
-  // 2、mutation 阶段：渲染 DOM 树。
+  // TODO: Before Mutation 阶段。
+
+  // mutation 阶段：渲染 DOM 树。
   const finishedWork = root.finishedWork as Fiber
   root.finishedWork = null
   commitMutationEffects(root, finishedWork)
   root.current = finishedWork
 
-  // 3、commit 阶段结束。
+  // layout 阶段：执行 useEffect 的副作用函数。
+  Scheduler.scheduleCallback(NormalPriority, () => {
+    flushPassiveEffects(root.current)
+  })
+
+  // commit 阶段结束。
   executionContext = previousExecutionContext
   workInProgressRoot = null
 }

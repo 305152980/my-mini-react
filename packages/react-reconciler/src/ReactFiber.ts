@@ -54,6 +54,7 @@ const FiberNode: FiberCtor = function (
   this.flags = NoFlags
   this.alternate = null
   this.deletions = null
+  this.updateQueue = null
 } as unknown as FiberCtor
 
 /**
@@ -122,6 +123,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   workInProgress.child = current.child
   workInProgress.memoizedProps = current.memoizedProps
   workInProgress.memoizedState = current.memoizedState
+  workInProgress.updateQueue = current.updateQueue
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
   return workInProgress

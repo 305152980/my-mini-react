@@ -1,7 +1,8 @@
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
-import { Placement, ChildDeletion } from './ReactFiberFlags'
-import { HostComponent, HostRoot, HostText } from './ReactWorkTags'
+import { Placement, ChildDeletion, Update, Passive } from './ReactFiberFlags'
+import { FunctionComponent, HostComponent, HostRoot } from './ReactWorkTags'
 import { isHost } from './ReactFiberCompleteWork'
+import { HookLayout, HookPassive, type HookFlags } from './ReactHookEffectTags'
 
 export function commitMutationEffects(
   root: FiberRoot,
@@ -39,6 +40,14 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
     commitDeletions(finishedWork.deletions!, parentDom)
     finishedWork.flags &= ~ChildDeletion
     finishedWork.deletions = null
+  }
+  // Update 是一个副作用标志（Effect Flag），用于标记某个 Fiber 节点在当前的渲染更新中需要执行更新操作。
+  if (flags & Update) {
+    if (finishedWork.tag === FunctionComponent) {
+      // 执行 useLayoutEffect 的销毁函数（如果有的话），并且执行 useLayoutEffect 的创建函数。
+      commitHookEffectListMount(HookLayout, finishedWork)
+      finishedWork.flags &= ~Update
+    }
   }
 }
 
@@ -146,3 +155,60 @@ function getStateNode(fiber: Fiber): Element | Text | void {
     node = node.child as Fiber
   }
 }
+
+function commitHookEffectListMount(
+  hookFlags: HookFlags,
+  finishedWork: Fiber
+): void {
+  const updateQueue = finishedWork.updateQueue
+  const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
+  if (lastEffect !== null) {
+    const firstEffect = lastEffect.next
+    let effect = firstEffect
+    do {
+      if ((effect.tag & hookFlags) === hookFlags) {
+        const create = effect.create
+        effect.destroy = create()
+      }
+      effect = effect.next
+    } while (effect !== firstEffect)
+  }
+}
+
+function recursivelyTraversePassiveMountEffects(current: Fiber): void {
+  let child = current.child
+  while (child !== null) {
+    flushPassiveEffects(child)
+    child = child.sibling
+  }
+}
+function commitPassiveEffects(current: Fiber): void {
+  switch (current.tag) {
+    case FunctionComponent:
+      if (current.flags & Passive) {
+        commitHookEffectListMount(HookPassive, current)
+        current.flags &= ~Passive
+        break
+      }
+    // TODO: 最核心的缺失部分是 SimpleMemoComponent（简单的记忆组件）和 MemoComponent（React.memo 包装的组件）。
+  }
+}
+export function flushPassiveEffects(current: Fiber): void {
+  // 1、遍历子节点，检查子节点是否有 useEffect 的副作用需要执行。
+  recursivelyTraversePassiveMountEffects(current)
+  // 2、如果有，就执行它们。
+  commitPassiveEffects(current)
+}
+
+//       [App]
+//       /   \
+//  [Header] [Main]
+//           /  \
+//       [List] [Btn]
+//
+//  useEffect 的实际执行顺序是：
+//  Header (最底层左侧)
+//  List (最底层中间)
+//  Btn (最底层右侧)
+//  Main (中间层)
+//  App (根节点)

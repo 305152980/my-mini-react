@@ -47,6 +47,10 @@ export type Fiber = {
 
   // 删除的子节点列表（仅在协调阶段使用，标记需要删除的节点，提交阶段会根据它们执行删除操作）
   deletions: Array<Fiber> | null
+
+  // 存储待处理的更新（如 setState 产生的更新对象链表）。
+  // 20260407 在 useLayoutEffect 和 useEffect 中用到过 updateQueue。
+  updateQueue: any
 }
 
 // 挂载容器类型：React 应用挂载的 DOM 根节点

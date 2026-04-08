@@ -22,5 +22,8 @@
 // // 测试 useMemo。
 // import './test-008'
 
-// 测试 useCallback。
-import './test-009'
+// // 测试 useCallback。
+// import './test-009'
+
+// 测试 useEffect 和 useLayoutEffect。
+import './test-010'
