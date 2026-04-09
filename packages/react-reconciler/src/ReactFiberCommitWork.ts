@@ -44,7 +44,9 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
   // Update 是一个副作用标志（Effect Flag），用于标记某个 Fiber 节点在当前的渲染更新中需要执行更新操作。
   if (flags & Update) {
     if (finishedWork.tag === FunctionComponent) {
-      // 执行 useLayoutEffect 的销毁函数（如果有的话），并且执行 useLayoutEffect 的创建函数。
+      // 分支一：更新时，先执行 useLayoutEffect 的销毁函数。
+      commitHookEffectListUnmount(HookLayout, finishedWork)
+      // 分支二：执行 useLayoutEffect 的创建函数，并保存新的销毁函数。
       commitHookEffectListMount(HookLayout, finishedWork)
       finishedWork.flags &= ~Update
     }
@@ -137,11 +139,32 @@ function isHostParent(fiber: Fiber): boolean {
   return fiber.tag === HostComponent || fiber.tag === HostRoot
 }
 
+/**
+ * 递归遍历并执行组件卸载时的 effect 清理函数。
+ * @param fiber - 要卸载的 Fiber 节点。
+ */
+function recursivelyTraverseUnmountEffects(fiber: Fiber): void {
+  // 先处理子节点。
+  let child = fiber.child
+  while (child !== null) {
+    recursivelyTraverseUnmountEffects(child)
+    child = child.sibling
+  }
+  // 再处理当前节点。
+  if (fiber.tag === FunctionComponent) {
+    // 执行 useLayoutEffect 和 useEffect 的销毁函数。
+    commitHookEffectListUnmount(HookLayout, fiber)
+    commitHookEffectListUnmount(HookPassive, fiber)
+  }
+}
 function commitDeletions(
   deletions: Array<Fiber>,
   parentDom: Element | Document | DocumentFragment
 ): void {
   deletions.forEach(deletion => {
+    // 分支一：递归查找并执行所有子组件的 effect 销毁函数。
+    recursivelyTraverseUnmountEffects(deletion)
+    // 分支二：从 DOM 中移除节点。
     parentDom.removeChild(getStateNode(deletion)!)
   })
 }
@@ -175,6 +198,32 @@ function commitHookEffectListMount(
   }
 }
 
+/**
+ * 执行 effect 的销毁函数（destroy）。
+ * @param hookFlags - Hook 的标志位（HookLayout 或 HookPassive）。
+ * @param finishedWork - 当前正在提交的 Fiber 节点。
+ */
+function commitHookEffectListUnmount(
+  hookFlags: HookFlags,
+  finishedWork: Fiber
+): void {
+  const updateQueue = finishedWork.updateQueue
+  const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null
+  if (lastEffect !== null) {
+    const firstEffect = lastEffect.next
+    let effect = firstEffect
+    do {
+      if ((effect.tag & hookFlags) === hookFlags) {
+        const destroy = effect.destroy
+        if (destroy !== undefined) {
+          destroy()
+        }
+      }
+      effect = effect.next
+    } while (effect !== firstEffect)
+  }
+}
+
 function recursivelyTraversePassiveMountEffects(current: Fiber): void {
   let child = current.child
   while (child !== null) {
@@ -186,6 +235,9 @@ function commitPassiveEffects(current: Fiber): void {
   switch (current.tag) {
     case FunctionComponent:
       if (current.flags & Passive) {
+        // 分支一：先执行 useEffect 的销毁函数。
+        commitHookEffectListUnmount(HookPassive, current)
+        // 分支二：执行 useEffect 的创建函数，并保存新的销毁函数。
         commitHookEffectListMount(HookPassive, current)
         current.flags &= ~Passive
         break
