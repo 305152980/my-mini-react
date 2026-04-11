@@ -1,0 +1,35 @@
+{
+  "name": "@my-mini-react/react-dom-bindings",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts",
+      "default": "./index.ts"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@my-mini-react/shared": "workspace:*",
+    "@my-mini-react/scheduler": "workspace:*",
+    "@my-mini-react/react-reconciler": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite-plugin-dts": "4.5.4"
+  }
+}
