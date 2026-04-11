@@ -36,3 +36,15 @@ export type ReactNode = ReactElement | ReactText | ReactFragment
 
 // React 节点列表：可作为 children 传入的任意内容
 export type ReactNodeList = ReactEmpty | ReactNode
+
+export type ReactContext<T> = {
+  $$typeof: symbol | number
+  _currentValue: T
+  Provider: ReactProviderType<T>
+  Consumer: ReactContext<T>
+}
+
+export type ReactProviderType<T> = {
+  $$typeof: symbol | number
+  _context: ReactContext<T>
+}

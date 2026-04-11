@@ -25,5 +25,8 @@
 // // 测试 useCallback。
 // import './test-009'
 
-// 测试 useEffect 和 useLayoutEffect。
-import './test-010'
+// // 测试 useEffect 和 useLayoutEffect。
+// import './test-010'
+
+// 测试 context。
+import './test-012'

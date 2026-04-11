@@ -6,8 +6,11 @@ import {
   Fragment,
   ClassComponent,
   FunctionComponent,
+  ContextProvider,
+  ContextConsumer,
 } from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
+import { popProvider } from './ReactFiberNewContext'
 
 export function completeWork(
   current: Fiber | null,
@@ -19,6 +22,10 @@ export function completeWork(
     case Fragment:
     case ClassComponent:
     case FunctionComponent:
+    case ContextConsumer:
+      return null
+    case ContextProvider:
+      popProvider(workInProgress.type._context)
       return null
     case HostComponent:
       if (current !== null) {

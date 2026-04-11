@@ -8,6 +8,7 @@ import {
   useRef,
   useEffect,
   useLayoutEffect,
+  useContext,
 } from './src/ReactFiberHook'
 import type { Container, FiberRoot } from './src/ReactInternalTypes'
 
@@ -21,6 +22,7 @@ export {
   useRef,
   useEffect,
   useLayoutEffect,
+  useContext,
   type FiberRoot,
   type Container,
 }

@@ -4,6 +4,8 @@ import type { Fiber, FiberRoot } from './ReactInternalTypes'
 import { HostRoot } from './ReactWorkTags'
 import { type Flags, Update, Passive } from './ReactFiberFlags'
 import { type HookFlags, HookLayout, HookPassive } from './ReactHookEffectTags'
+import type { ReactContext } from '@my-mini-react/shared/ReactTypes'
+import { readContext } from './ReactFiberNewContext'
 
 type Hook = {
   memoizedState: any
@@ -299,4 +301,8 @@ function updateEffectImpl(
   // 1、保存 Effect 对象到当前 Hook 的 memoizedState。
   // 2、构建 Effect 链表（单向循环链表）。
   hook.memoizedState = pushEffect(hookFlags, create, nextDeps)
+}
+
+export function useContext<T>(context: ReactContext<T>): T {
+  return readContext(context)
 }

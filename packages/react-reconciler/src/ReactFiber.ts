@@ -8,10 +8,16 @@ import {
   HostComponent,
   HostText,
   IndeterminateComponent,
+  ContextProvider,
+  ContextConsumer,
   type WorkTag,
 } from './ReactWorkTags'
 import { isStr, isFn } from '@my-mini-react/shared/utils'
-import { REACT_FRAGMENT_TYPE } from '@my-mini-react/shared/ReactSymbols'
+import {
+  REACT_FRAGMENT_TYPE,
+  REACT_PROVIDER_TYPE,
+  REACT_CONTEXT_TYPE,
+} from '@my-mini-react/shared/ReactSymbols'
 
 /**
  * 创建 Fiber 节点的核心方法
@@ -80,11 +86,23 @@ export function createFiberFromTypeAndProps(
   } else if (isStr(type)) {
     fiberTag = HostComponent
   } else {
-    switch (type) {
-      case REACT_FRAGMENT_TYPE:
-        fiberTag = Fragment
-        break
-      // TODO: 其他内置组件类型（如 Suspense、Profiler 等）可以在这里继续添加 case 分支。
+    if (typeof type === 'object' || type !== null) {
+      switch (type.$$typeof) {
+        case REACT_PROVIDER_TYPE:
+          fiberTag = ContextProvider
+          break
+        case REACT_CONTEXT_TYPE:
+          fiberTag = ContextConsumer
+          break
+        // TODO: REACT_FORWARD_REF_TYPE、REACT_MEMO_TYPE、REACT_LAZY_TYPE。
+      }
+    } else {
+      switch (type) {
+        case REACT_FRAGMENT_TYPE:
+          fiberTag = Fragment
+          break
+        // TODO: 其他内置组件类型（如 Suspense、Profiler 等）可以在这里继续添加 case 分支。
+      }
     }
   }
   const fiber = createFiber(fiberTag, pendingProps, key)
