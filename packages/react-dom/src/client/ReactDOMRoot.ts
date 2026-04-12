@@ -5,6 +5,7 @@ import {
   type Container,
   type FiberRoot,
 } from '@my-mini-react/react-reconciler'
+import { listenToAllSupportedEvents } from '@my-mini-react/react-dom-bindings'
 
 type RootType = {
   _internalRoot: FiberRoot
@@ -24,6 +25,7 @@ ReactDOMRoot.prototype.render = function (children: ReactNodeList): void {
 
 export function createRoot(container: Container): RootType {
   const root: FiberRoot = createFiberRoot(container)
+  listenToAllSupportedEvents(container)
   return new ReactDOMRoot(root)
 }
 

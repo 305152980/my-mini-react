@@ -131,6 +131,28 @@ importers:
 
   packages/react-dom:
     dependencies:
+      '@my-mini-react/react-dom-bindings':
+        specifier: workspace:*
+        version: link:../react-dom-bindings
+      '@my-mini-react/react-reconciler':
+        specifier: workspace:*
+        version: link:../react-reconciler
+      '@my-mini-react/scheduler':
+        specifier: workspace:*
+        version: link:../scheduler
+      '@my-mini-react/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite-plugin-dts:
+        specifier: 4.5.4
+        version: 4.5.4(@types/node@25.4.0)(rollup@4.59.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.4.0))
+
+  packages/react-dom-bindings:
+    dependencies:
       '@my-mini-react/react-reconciler':
         specifier: workspace:*
         version: link:../react-reconciler
