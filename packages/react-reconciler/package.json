@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@my-mini-react/shared": "workspace:*",
-    "@my-mini-react/scheduler": "workspace:*"
+    "@my-mini-react/scheduler": "workspace:*",
+    "@my-mini-react/react-dom-bindings": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

@@ -45,7 +45,9 @@ function commitReconciliationEffects(finishedWork: Fiber): void {
   if (flags & Update) {
     if (finishedWork.tag === FunctionComponent) {
       // 分支一：更新时，先执行 useLayoutEffect 的销毁函数。
-      commitHookEffectListUnmount(HookLayout, finishedWork)
+      if (finishedWork.alternate) {
+        commitHookEffectListUnmount(HookLayout, finishedWork.alternate)
+      }
       // 分支二：执行 useLayoutEffect 的创建函数，并保存新的销毁函数。
       commitHookEffectListMount(HookLayout, finishedWork)
       finishedWork.flags &= ~Update
@@ -201,7 +203,7 @@ function commitHookEffectListMount(
 /**
  * 执行 effect 的销毁函数（destroy）。
  * @param hookFlags - Hook 的标志位（HookLayout 或 HookPassive）。
- * @param finishedWork - 当前正在提交的 Fiber 节点。
+ * @param finishedWork - 包含 effect 销毁函数的 Fiber 节点（更新时传 alternate，卸载时传自身）。
  */
 function commitHookEffectListUnmount(
   hookFlags: HookFlags,
@@ -236,7 +238,9 @@ function commitPassiveEffects(current: Fiber): void {
     case FunctionComponent:
       if (current.flags & Passive) {
         // 分支一：先执行 useEffect 的销毁函数。
-        commitHookEffectListUnmount(HookPassive, current)
+        if (current.alternate) {
+          commitHookEffectListUnmount(HookPassive, current.alternate)
+        }
         // 分支二：执行 useEffect 的创建函数，并保存新的销毁函数。
         commitHookEffectListMount(HookPassive, current)
         current.flags &= ~Passive

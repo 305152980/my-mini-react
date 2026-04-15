@@ -27,6 +27,11 @@
       "types": "./ReactSymbols.ts",
       "import": "./ReactSymbols.ts",
       "default": "./ReactSymbols.ts"
+    },
+    "./ReactErrorUtils": {
+      "types": "./ReactErrorUtils.ts",
+      "import": "./ReactErrorUtils.ts",
+      "default": "./ReactErrorUtils.ts"
     }
   },
   "scripts": {

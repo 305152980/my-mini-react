@@ -7,6 +7,8 @@ import {
   addEventBubbleListener,
 } from './EventListener'
 import { createEventListenerWrapperWithPriority } from './ReactDOMEventListener'
+import { type Fiber, HostComponent } from '@my-mini-react/react-reconciler'
+import { getListener } from './getListener'
 
 SimpleEventPugin.registerEvents()
 // EnterLeaveEventPlugin.registerEvents()
@@ -140,4 +142,79 @@ export function listenToAllSupportedEvents(
       }
     })
   }
+}
+
+export type AnyNativeEvent = Event | KeyboardEvent | MouseEvent | TouchEvent
+
+export type DispatchListener = {
+  instance: null | Fiber
+  listener: Function
+  currentTarget: EventTarget
+}
+
+type DispatchEntry = {
+  event: AnyNativeEvent
+  listeners: Array<DispatchListener>
+}
+
+export type DispatchQueue = Array<DispatchEntry>
+
+export function extractEvents(
+  dispatchQueue: DispatchQueue,
+  domEventName: DOMEventName,
+  targetInst: null | Fiber,
+  nativeEvent: AnyNativeEvent,
+  nativeEventTarget: null | EventTarget,
+  eventSystemFlags: EventSystemFlags,
+  targetContainer: EventTarget
+): void {
+  SimpleEventPugin.extractEvents(
+    dispatchQueue,
+    domEventName,
+    targetInst,
+    nativeEvent,
+    nativeEventTarget,
+    eventSystemFlags,
+    targetContainer
+  )
+  // TODO: change 事件。
+}
+
+export function accumulateSinglePhaseListeners(
+  targetFiber: Fiber | null,
+  reactName: string | null,
+  nativeEventType: string,
+  inCapturePhase: boolean,
+  accumulateTargetOnly: boolean,
+  nativeEvent: AnyNativeEvent
+): Array<DispatchListener> {
+  const captureName = reactName !== null ? reactName + 'Capture' : null
+  const reactEventName = inCapturePhase ? captureName : reactName
+  const listeners: Array<DispatchListener> = []
+
+  let instance = targetFiber
+
+  // 从目标 Fiber 开始，沿着 Fiber 树向上遍历，收集匹配的事件监听器。
+  while (instance !== null) {
+    const { stateNode, tag } = instance
+    // 只有当 Fiber 是 HostComponent（即对应一个真实 DOM 元素）时，才有可能绑定事件监听器。
+    if (tag === HostComponent) {
+      // 获取当前 Fiber 上对应事件名称的监听器函数。
+      const listener = getListener(instance, reactEventName!)
+      if (listener !== null) {
+        listeners.push({
+          instance,
+          listener,
+          currentTarget: stateNode,
+        })
+      }
+    }
+    // 如果只需要收集目标节点的监听器（如 scroll 事件），则在第一次循环后就停止，不继续向上冒泡。
+    if (accumulateTargetOnly) {
+      break
+    }
+    instance = instance.return
+  }
+
+  return listeners
 }

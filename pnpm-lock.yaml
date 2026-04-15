@@ -172,6 +172,9 @@ importers:
 
   packages/react-reconciler:
     dependencies:
+      '@my-mini-react/react-dom-bindings':
+        specifier: workspace:*
+        version: link:../react-dom-bindings
       '@my-mini-react/scheduler':
         specifier: workspace:*
         version: link:../scheduler

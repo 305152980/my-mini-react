@@ -10,12 +10,15 @@ import {
   useLayoutEffect,
   useContext,
 } from './src/ReactFiberHook'
-import type { Container, FiberRoot } from './src/ReactInternalTypes'
+import type { Container, FiberRoot, Fiber } from './src/ReactInternalTypes'
+import { HostComponent } from './src/ReactWorkTags'
 import {
   getCurrentUpdatePriority,
+  setCurrentUpdatePriority,
   DefaultEventPriority,
   DiscreteEventPriority,
   IdleEventPriority,
+  ContinuousEventPriority,
   type EventPriority,
 } from './src/ReactEventPriorities'
 
@@ -30,11 +33,15 @@ export {
   useEffect,
   useLayoutEffect,
   useContext,
+  type Fiber,
   type FiberRoot,
   type Container,
+  HostComponent,
   getCurrentUpdatePriority,
+  setCurrentUpdatePriority,
   DefaultEventPriority,
   DiscreteEventPriority,
   IdleEventPriority,
+  ContinuousEventPriority,
   type EventPriority,
 }

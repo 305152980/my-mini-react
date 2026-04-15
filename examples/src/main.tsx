@@ -28,5 +28,9 @@
 // // 测试 useEffect 和 useLayoutEffect。
 // import './test-010'
 
-// 测试 context。
-import './test-012'
+// // 测试 context。
+// import './test-012'
+
+// 测试 useEffect 和 useLayoutEffect 的清理函数。
+// 测试事件。
+import './test-011'

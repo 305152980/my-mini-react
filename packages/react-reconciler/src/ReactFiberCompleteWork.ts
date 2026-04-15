@@ -11,6 +11,10 @@ import {
 } from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
 import { popProvider } from './ReactFiberNewContext'
+import {
+  precacheFiberNode,
+  updateFiberProps,
+} from '@my-mini-react/react-dom-bindings'
 
 export function completeWork(
   current: Fiber | null,
@@ -41,6 +45,8 @@ export function completeWork(
         // 4、把 DOM 节点保存在 Fiber 的 stateNode 上。
         workInProgress.stateNode = instance
       }
+      precacheFiberNode(workInProgress, workInProgress.stateNode as Element)
+      updateFiberProps(workInProgress.stateNode as Element, newProps)
       return null
     case HostText:
       if (current !== null) {
@@ -56,6 +62,8 @@ export function completeWork(
         // 分支二：初次挂载时，创建新的文本节点。
         workInProgress.stateNode = document.createTextNode(newProps)
       }
+      precacheFiberNode(workInProgress, workInProgress.stateNode as Text)
+      updateFiberProps(workInProgress.stateNode as Text, newProps)
       return null
     // TODO
   }
@@ -69,6 +77,8 @@ function finalizeInitialChildren(
   prevProps: any,
   nextProps: any
 ): void {
+  // 事件处理器前缀，这些不应该通过 DOM 属性设置。
+  const isEventProp = (key: string) => key.startsWith('on')
   for (const propKey in prevProps) {
     const prevProp = prevProps[propKey]
     if (propKey === 'children') {
@@ -78,7 +88,7 @@ function finalizeInitialChildren(
       ) {
         domElement.textContent = ''
       }
-    } else {
+    } else if (!isEventProp(propKey)) {
       if (!(propKey in nextProps)) {
         ;(domElement as any)[propKey] = ''
       }
@@ -90,7 +100,7 @@ function finalizeInitialChildren(
       if (isStr(nextProp) || isNum(nextProp)) {
         domElement.textContent = nextProp + ''
       }
-    } else {
+    } else if (!isEventProp(propKey)) {
       ;(domElement as any)[propKey] = nextProp
     }
   }
