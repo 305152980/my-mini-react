@@ -9,7 +9,9 @@ import {
 import { createEventListenerWrapperWithPriority } from './ReactDOMEventListener'
 import { type Fiber, HostComponent } from '@my-mini-react/react-reconciler'
 import { getListener } from './getListener'
+import { type ReactSyntheticEvent } from './ReactSyntheticEventType'
 
+// TODO
 SimpleEventPugin.registerEvents()
 // EnterLeaveEventPlugin.registerEvents()
 // ChangeEventPlugin.registerEvents()
@@ -153,7 +155,7 @@ export type DispatchListener = {
 }
 
 type DispatchEntry = {
-  event: AnyNativeEvent
+  event: ReactSyntheticEvent // 合成事件对象。
   listeners: Array<DispatchListener>
 }
 

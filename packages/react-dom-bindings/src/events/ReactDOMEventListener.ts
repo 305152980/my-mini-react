@@ -25,6 +25,8 @@ import {
 } from './DOMPluginEventSystem'
 import { getClosestInstanceFromNode } from '../client/ReactDOMComponentTree'
 import { invokeGuardedCallbackAndCatchFirstError } from '@my-mini-react/shared/ReactErrorUtils'
+import { type ReactSyntheticEvent } from './ReactSyntheticEventType'
+import { type Fiber } from '@my-mini-react/react-reconciler'
 
 function dispatchDiscreteEvent(
   domEventName: DOMEventName,
@@ -69,7 +71,7 @@ function dispatchContinuousEvent(
   }
 }
 function executeDispatch(
-  event: AnyNativeEvent, // 原生的浏览器事件对象。
+  event: ReactSyntheticEvent, // 合成事件对象。
   listener: Function, //事件回调函数
   currentTarget: EventTarget //当前事件绑定的 DOM 元素
 ): void {
@@ -78,22 +80,31 @@ function executeDispatch(
   invokeGuardedCallbackAndCatchFirstError(type, listener, undefined, event)
 }
 function processDispatchQueueItemsInOrder(
-  event: AnyNativeEvent, // 原生的浏览器事件对象。
+  event: ReactSyntheticEvent, // 合成事件对象。
   dispatchListeners: Array<DispatchListener>, // 待执行的监听器列表。
   isCapturePhase: boolean // 是否处于“捕获阶段”。
 ): void {
+  let preInstance: null | Fiber = null
   if (isCapturePhase) {
     for (let i = dispatchListeners.length - 1; i >= 0; i--) {
       // instance：Fiber 节点（组件实例）
       // listener：事件回调函数
       // currentTarget：当前事件绑定的 DOM 元素
       const { instance, listener, currentTarget } = dispatchListeners[i]
+      if (preInstance !== instance && event.isPropagationStopped()) {
+        return
+      }
       executeDispatch(event, listener, currentTarget)
+      preInstance = instance
     }
   } else {
     for (let i = 0; i < dispatchListeners.length; i++) {
       const { instance, listener, currentTarget } = dispatchListeners[i]
+      if (preInstance !== instance && event.isPropagationStopped()) {
+        return
+      }
       executeDispatch(event, listener, currentTarget)
+      preInstance = instance
     }
   }
 }

@@ -10,6 +10,7 @@ import {
   accumulateSinglePhaseListeners,
 } from '../DOMPluginEventSystem'
 import { IS_CAPTURE_PHASE, type EventSystemFlags } from '../EventSystemFlags'
+import { SyntheticEvent, SyntheticMouseEvent } from '../SyntheticEvent'
 
 /**
  * extractEvents 是 SimpleEventPlugin 的核心方法
@@ -33,6 +34,26 @@ function extractEvents(
     // 如果 React 不支持该事件，直接返回
     return
   }
+  let SyntheticEventCtor = SyntheticEvent
+  switch (domEventName) {
+    case 'click':
+      // 检测鼠标按键：0=左键, 1=中键, 2=右键
+      if ((nativeEvent as MouseEvent).button === 2) {
+        // 忽略右键点击事件
+        return
+      }
+    case 'auxclick':
+    case 'dblclick':
+    case 'mousedown':
+    case 'mousemove':
+    case 'mouseup':
+    case 'mouseout':
+    case 'mouseover':
+    case 'contextmenu':
+      SyntheticEventCtor = SyntheticMouseEvent
+      break
+    // TODO: 根据事件类型指定不同的合成事件构造函数，例如 KeyboardEvent、TouchEvent 等
+  }
   // 2. 判断当前是否处于捕获阶段
   // 通过位运算检查 eventSystemFlags 中是否包含 IS_CAPTURE_PHASE 标志
   const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0
@@ -54,8 +75,22 @@ function extractEvents(
   )
   // 5. 如果收集到了监听器，则将事件和监听器列表放入派发队列
   if (listeners.length > 0) {
+    // 创建合成事件对象
+    // 第三个参数 targetInst 传 null 的原因：
+    // 1. targetInst 已经在第 68 行的 accumulateSinglePhaseListeners 中使用过了（用于收集监听器）
+    // 2. SyntheticEvent 的 _targetInst 属性会在后续事件分发阶段被设置
+    // _targetInst 的作用：
+    //   用于在事件传播过程中追踪当前处理到的 Fiber 节点
+    //   它会在事件分发阶段动态设置，而不是在创建时设置
+    const event = new SyntheticEventCtor(
+      reactName,
+      domEventName,
+      null,
+      nativeEvent,
+      nativeEventTarget
+    )
     dispatchQueue.push({
-      event: nativeEvent,
+      event,
       listeners,
     })
   }

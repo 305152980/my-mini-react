@@ -32,6 +32,11 @@
       "types": "./ReactErrorUtils.ts",
       "import": "./ReactErrorUtils.ts",
       "default": "./ReactErrorUtils.ts"
+    },
+    "./assign": {
+      "types": "./assign.ts",
+      "import": "./assign.ts",
+      "default": "./assign.ts"
     }
   },
   "scripts": {
