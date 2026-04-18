@@ -20,7 +20,7 @@
     "useDefineForClassFields": true, // 类字段使用 `defineProperty` 语义（与 Vue 3 响应式兼容）
     "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致（避免跨平台问题）
     "noImplicitOverride": true, // 子类重写方法必须加 override 关键字
-    "noFallthroughCasesInSwitch": true, // 禁止 switch 语句意外穿透
+    "noFallthroughCasesInSwitch": false, // 允许 switch 语句穿透（React 事件系统需要）
 
     /* ┌───────────────────────┐ */
     /* │ 模块互操作与兼容       │ */
