@@ -82,6 +82,7 @@ function addTrappedEventListener(
   // 1. 构造一个带有优先级调度功能的包装监听器
   // React 不会直接执行回调，而是根据事件类型（如离散事件、连续事件）
   // 将其包装成不同优先级的任务，交给调度器（Scheduler）处理
+  // 事件回调本身是同步执行的，但它触发的渲染是被调度的，而调度需要优先级！事件触发的渲染调度，其优先级就是该事件的优先级。
   let listener = createEventListenerWrapperWithPriority(
     targetContainer,
     domEventName,

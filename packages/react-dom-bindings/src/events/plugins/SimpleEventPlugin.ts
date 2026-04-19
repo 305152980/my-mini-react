@@ -30,6 +30,7 @@ function extractEvents(
 ): void {
   // 1. 将原生事件名（如 'click'）转换为 React 事件名（如 'onClick'）
   const reactName = topLevelEventsToReactNames.get(domEventName)
+  // 这里是 SimpleEventPugin.extractEvents 不处理 change 事件的原因。
   if (reactName === undefined) {
     // 如果 React 不支持该事件，直接返回
     return
