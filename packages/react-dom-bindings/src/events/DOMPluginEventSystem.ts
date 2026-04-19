@@ -1,7 +1,12 @@
 import type { DOMEventName } from './DOMEventNames'
 import * as SimpleEventPugin from './plugins/SimpleEventPlugin'
+import * as ChangeEventPlugin from './plugins/ChangeEventPlugin'
 import { allNativeEvents } from './EventRegistry'
-import { IS_CAPTURE_PHASE, type EventSystemFlags } from './EventSystemFlags'
+import {
+  IS_CAPTURE_PHASE,
+  SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS,
+  type EventSystemFlags,
+} from './EventSystemFlags'
 import {
   addEventCaptureListener,
   addEventBubbleListener,
@@ -14,7 +19,7 @@ import { type ReactSyntheticEvent } from './ReactSyntheticEventType'
 // TODO
 SimpleEventPugin.registerEvents()
 // EnterLeaveEventPlugin.registerEvents()
-// ChangeEventPlugin.registerEvents()
+ChangeEventPlugin.registerEvents()
 // SelectEventPlugin.registerEvents()
 // BeforeInputEventPlugin.registerEvents()
 
@@ -161,6 +166,15 @@ type DispatchEntry = {
 
 export type DispatchQueue = Array<DispatchEntry>
 
+/**
+ * 事件提取入口：将原生 DOM 事件转化为 React 合成事件
+ *
+ * 工作流程：
+ * 1. 接收原生 DOM 事件和相关信息
+ * 2. 分发给各个事件插件（如 SimpleEventPlugin）处理
+ * 3. 插件负责收集监听器、创建合成事件，并放入 dispatchQueue
+ * 4. 最终由 processDispatchQueue 统一执行
+ */
 export function extractEvents(
   dispatchQueue: DispatchQueue,
   domEventName: DOMEventName,
@@ -170,6 +184,7 @@ export function extractEvents(
   eventSystemFlags: EventSystemFlags,
   targetContainer: EventTarget
 ): void {
+  // 分发给 SimpleEventPlugin 处理标准事件（click, input 等）
   SimpleEventPugin.extractEvents(
     dispatchQueue,
     domEventName,
@@ -179,7 +194,38 @@ export function extractEvents(
     eventSystemFlags,
     targetContainer
   )
-  // TODO: change 事件。
+  const shouldProcessPolyfillPlugins =
+    (eventSystemFlags & SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS) === 0
+  // We don't process these events unless we are in the
+  // event's native "bubble" phase, which means that we're
+  // not in the capture phase. That's because we emulate
+  // the capture phase here still. This is a trade-off,
+  // because in an ideal world we would not emulate and use
+  // the phases properly, like we do with the SimpleEvent
+  // plugin. However, the plugins below either expect
+  // emulation (EnterLeave) or use state localized to that
+  // plugin (BeforeInput, Change, Select). The state in
+  // these modules complicates things, as you'll essentially
+  // get the case where the capture phase event might change
+  // state, only for the following bubble event to come in
+  // later and not trigger anything as the state now
+  // invalidates the heuristics of the event plugin. We
+  // could alter all these plugins to work in such ways, but
+  // that might cause other unknown side-effects that we
+  // can't foresee right now.
+  if (shouldProcessPolyfillPlugins) {
+    ChangeEventPlugin.extractEvents(
+      dispatchQueue,
+      domEventName,
+      targetInst,
+      nativeEvent,
+      nativeEventTarget,
+      eventSystemFlags,
+      targetContainer
+    )
+    // TODO: 其他事件插件
+  }
+  // TODO: 其他事件插件
 }
 
 export function accumulateSinglePhaseListeners(
@@ -200,7 +246,7 @@ export function accumulateSinglePhaseListeners(
   while (instance !== null) {
     const { stateNode, tag } = instance
     // 只有当 Fiber 是 HostComponent（即对应一个真实 DOM 元素）时，才有可能绑定事件监听器。
-    if (tag === HostComponent) {
+    if (tag === HostComponent && stateNode !== null) {
       // 获取当前 Fiber 上对应事件名称的监听器函数。
       const listener = getListener(instance, reactEventName!)
       if (listener !== null) {
@@ -218,5 +264,42 @@ export function accumulateSinglePhaseListeners(
     instance = instance.return
   }
 
+  return listeners
+}
+
+// 因为我们只在冒泡阶段处理这些插件，所以我们需要（通过模拟）一次性收集两个阶段的监听器。
+export function accumulateTwoPhaseListeners(
+  targetFiber: Fiber | null,
+  reactName: string | null
+): Array<DispatchListener> {
+  const captureName = reactName !== null ? reactName + 'Capture' : null
+  const listeners: Array<DispatchListener> = []
+
+  let instance = targetFiber
+
+  while (instance !== null) {
+    const { stateNode, tag } = instance
+    if (tag === HostComponent && stateNode !== null) {
+      // 捕获阶段监听器。
+      const captureListener = getListener(instance, captureName!)
+      if (captureListener !== null) {
+        listeners.unshift({
+          instance,
+          listener: captureListener,
+          currentTarget: stateNode,
+        })
+      }
+      // 冒泡阶段监听器。
+      const bubbleListener = getListener(instance, reactName!)
+      if (bubbleListener !== null) {
+        listeners.push({
+          instance,
+          listener: bubbleListener,
+          currentTarget: stateNode,
+        })
+      }
+    }
+    instance = instance.return
+  }
   return listeners
 }

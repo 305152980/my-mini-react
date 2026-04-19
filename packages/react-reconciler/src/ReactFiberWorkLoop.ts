@@ -47,6 +47,7 @@ export function performConcurrentWorkOnRoot(root: FiberRoot): void {
   const finishedWork = root.current.alternate
   root.finishedWork = finishedWork
   commitRoot(root)
+  console.log('performConcurrentWorkOnRoot', root)
 }
 
 function renderRootSync(root: FiberRoot): void {

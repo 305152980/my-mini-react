@@ -15,6 +15,7 @@ import {
   precacheFiberNode,
   updateFiberProps,
 } from '@my-mini-react/react-dom-bindings'
+import { registrationNameDependencies } from '@my-mini-react/react-dom-bindings'
 
 export function completeWork(
   current: Fiber | null,
@@ -78,7 +79,9 @@ function finalizeInitialChildren(
   nextProps: any
 ): void {
   // 事件处理器前缀，这些不应该通过 DOM 属性设置。
-  const isEventProp = (key: string) => key.startsWith('on')
+  // const isEventProp = (key: string): boolean => key.startsWith('on')
+  const isEventProp = (key: string): boolean =>
+    registrationNameDependencies.hasOwnProperty(key)
   for (const propKey in prevProps) {
     const prevProp = prevProps[propKey]
     if (propKey === 'children') {
