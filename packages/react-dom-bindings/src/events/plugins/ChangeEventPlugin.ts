@@ -34,6 +34,15 @@ function registerEvents(): void {
   ])
 }
 
+// 这里对源码中的该函数进行了简化实现。
+function getInstIfValueChanged(
+  targetInst: Fiber,
+  targetNode: HTMLInputElement | HTMLTextAreaElement
+): boolean {
+  const oldValue = targetInst.pendingProps.value
+  const newValue = targetNode.value
+  return oldValue !== newValue
+}
 function extractEvents(
   dispatchQueue: DispatchQueue, // 派发队列，用于存储待处理的事件和监听器
   domEventName: DOMEventName, // 原生 DOM 事件名称，例如 'click'
@@ -51,6 +60,11 @@ function extractEvents(
     isTextInputElement(targetNode) &&
     (domEventName === 'input' || domEventName === 'change')
   ) {
+    const inst = getInstIfValueChanged(targetInst!, targetNode)
+    // 如果 input 和 textarea 的 value 属性值没有变化，则不处理。
+    if (!inst) {
+      return
+    }
     // 因为我们只在冒泡阶段处理这些插件，所以我们需要（通过模拟）一次性收集两个阶段的监听器。
     const listeners = accumulateTwoPhaseListeners(targetInst, 'onChange')
     if (listeners.length > 0) {
