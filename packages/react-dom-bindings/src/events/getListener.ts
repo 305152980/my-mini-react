@@ -56,6 +56,9 @@ export function getListener(
     return null
   }
   const listener = props[registrationName]
+  if (listener === undefined) {
+    return null
+  }
   if (shouldPreventMouseEvent(registrationName, inst.type, props)) {
     return null
   }

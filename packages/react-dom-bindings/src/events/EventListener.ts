@@ -8,9 +8,14 @@
 export function addEventBubbleListener(
   target: EventTarget,
   eventType: string,
-  listener: Function
+  listener: Function,
+  passive: boolean
 ): Function {
-  target.addEventListener(eventType, listener as any, false)
+  // 简单来说，当你将一个事件监听器的 passive 属性设置为 true 时，你是在向浏览器做出一个承诺：“这个监听器绝对不会调用 event.preventDefault() 来阻止事件的默认行为。”
+  target.addEventListener(eventType, listener as any, {
+    capture: false,
+    passive,
+  })
   return listener
 }
 
@@ -24,9 +29,14 @@ export function addEventBubbleListener(
 export function addEventCaptureListener(
   target: EventTarget,
   eventType: string,
-  listener: Function
+  listener: Function,
+  passive: boolean
 ): Function {
-  target.addEventListener(eventType, listener as any, true)
+  // 简单来说，当你将一个事件监听器的 passive 属性设置为 true 时，你是在向浏览器做出一个承诺：“这个监听器绝对不会调用 event.preventDefault() 来阻止事件的默认行为。”
+  target.addEventListener(eventType, listener as any, {
+    capture: true,
+    passive,
+  })
   return listener
 }
 

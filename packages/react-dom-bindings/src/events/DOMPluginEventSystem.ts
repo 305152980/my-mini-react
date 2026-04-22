@@ -88,15 +88,36 @@ function addTrappedEventListener(
     domEventName,
     eventSystemFlags
   )
+  let isPassiveListener: boolean = false
+  // 浏览器引入了一种干预措施，使这些事件在 document 上默认为 passive 状态。
+  // React 不再将它们绑定到 document 上，但是现在改变这一点将会撤销之前的性能优势。
+  // 因此，我们现在在根节点上手动模拟现有的行为。
+  if (
+    domEventName === 'touchstart' ||
+    domEventName === 'touchmove' ||
+    domEventName === 'wheel'
+  ) {
+    isPassiveListener = true
+  }
   // 2. 根据阶段选择原生的 addEventListener 进行绑定
   if (isCapturePhaseListener) {
     // 如果是捕获阶段：注册捕获监听器
     // 对应原生：target.addEventListener(type, listener, true)
-    addEventCaptureListener(targetContainer, domEventName, listener)
+    addEventCaptureListener(
+      targetContainer,
+      domEventName,
+      listener,
+      isPassiveListener
+    )
   } else {
     // 如果是冒泡阶段：注册冒泡监听器
     // 对应原生：target.addEventListener(type, listener, false)
-    addEventBubbleListener(targetContainer, domEventName, listener)
+    addEventBubbleListener(
+      targetContainer,
+      domEventName,
+      listener,
+      isPassiveListener
+    )
   }
 }
 function listenToNativeEvent(
