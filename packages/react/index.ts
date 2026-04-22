@@ -13,3 +13,4 @@ export {
 
 export { Component } from './src/ReactBaseClasses'
 export { createContext } from './src/ReactContext'
+export { memo } from './src/ReactMemo'

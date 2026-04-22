@@ -38,5 +38,8 @@
 // // 测试合成事件。
 // import './test-013'
 
-// 测试受控组件事件。
-import './test-014'
+// // 测试受控组件事件。
+// import './test-014'
+
+// 测试 memo 组件。
+import './test-015'

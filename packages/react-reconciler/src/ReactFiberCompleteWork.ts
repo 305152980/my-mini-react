@@ -8,6 +8,8 @@ import {
   FunctionComponent,
   ContextProvider,
   ContextConsumer,
+  SimpleMemoComponent,
+  MemoComponent,
 } from './ReactWorkTags'
 import { isNum, isStr } from '@my-mini-react/shared/utils'
 import { popProvider } from './ReactFiberNewContext'
@@ -27,6 +29,8 @@ export function completeWork(
     case Fragment:
     case ClassComponent:
     case FunctionComponent:
+    case MemoComponent:
+    case SimpleMemoComponent:
     case ContextConsumer:
       return null
     case ContextProvider:

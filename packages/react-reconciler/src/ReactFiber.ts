@@ -11,12 +11,14 @@ import {
   ContextProvider,
   ContextConsumer,
   type WorkTag,
+  MemoComponent,
 } from './ReactWorkTags'
 import { isStr, isFn } from '@my-mini-react/shared/utils'
 import {
   REACT_FRAGMENT_TYPE,
   REACT_PROVIDER_TYPE,
   REACT_CONTEXT_TYPE,
+  REACT_MEMO_TYPE,
 } from '@my-mini-react/shared/ReactSymbols'
 
 /**
@@ -94,7 +96,10 @@ export function createFiberFromTypeAndProps(
         case REACT_CONTEXT_TYPE:
           fiberTag = ContextConsumer
           break
-        // TODO: REACT_FORWARD_REF_TYPE、REACT_MEMO_TYPE、REACT_LAZY_TYPE。
+        case REACT_MEMO_TYPE:
+          fiberTag = MemoComponent
+          break
+        // TODO: REACT_FORWARD_REF_TYPE、REACT_LAZY_TYPE。
       }
     } else {
       switch (type) {
@@ -150,4 +155,20 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
 export function createFiberFromText(content: string): Fiber {
   const fiber = createFiber(HostText, content, null)
   return fiber
+}
+
+function shouldConstruct(Component: Function): boolean {
+  const prototype = Component.prototype
+  return !!prototype && prototype.isReactComponent
+}
+
+export function isSimpleFunctionComponent(type: any): boolean {
+  // 在 React 中，defaultProps 是组件的一个属性（通常是一个对象），用来定义 props 的默认值。
+  //   如果组件定义了默认参数，type.defaultProps 会是一个对象（例如 { name: 'Guest' }）。
+  //   如果组件没有定义默认参数，type.defaultProps 的值就是 undefined。
+  return (
+    typeof type === 'function' &&
+    !shouldConstruct(type) &&
+    type.defaultProps === undefined
+  )
 }

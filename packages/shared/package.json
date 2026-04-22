@@ -37,6 +37,11 @@
       "types": "./assign.ts",
       "import": "./assign.ts",
       "default": "./assign.ts"
+    },
+    "./shallowEqual": {
+      "types": "./shallowEqual.ts",
+      "import": "./shallowEqual.ts",
+      "default": "./shallowEqual.ts"
     }
   },
   "scripts": {

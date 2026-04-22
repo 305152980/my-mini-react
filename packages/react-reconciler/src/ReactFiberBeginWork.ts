@@ -8,11 +8,19 @@ import {
   FunctionComponent,
   ContextProvider,
   ContextConsumer,
+  MemoComponent,
+  SimpleMemoComponent,
 } from './ReactWorkTags'
 import { mountChildFibers, reconcileChildFibers } from './ReactChildFiber'
 import { isStr, isNum } from '@my-mini-react/shared/utils'
 import { renderWithHooks } from './ReactFiberHook'
 import { pushProvider, readContext } from './ReactFiberNewContext'
+import shallowEqual from '@my-mini-react/shared/shallowEqual'
+import {
+  createFiberFromTypeAndProps,
+  createWorkInProgress,
+  isSimpleFunctionComponent,
+} from './ReactFiber'
 
 // 1、处理当前 Fiber 节点。
 // 2、返回子 Fiber 节点。
@@ -37,6 +45,10 @@ export function beginWork(
       return updateContextProvider(current, workInProgress)
     case ContextConsumer:
       return updateContextConsumer(current, workInProgress)
+    case MemoComponent:
+      return updateMemoComponent(current, workInProgress)
+    case SimpleMemoComponent:
+      return updateSimpleMemoComponent(current, workInProgress)
     // TODO
   }
   throw new Error(
@@ -144,6 +156,66 @@ function updateContextConsumer(
   return workInProgress.child
 }
 
+function updateSimpleMemoComponent(
+  current: Fiber | null,
+  workInProgress: Fiber
+): Fiber | null {
+  // 判断组件是不是挂载阶段。
+  if (current !== null) {
+    if (shallowEqual(current.memoizedProps, workInProgress.pendingProps)) {
+      // 退出渲染，复用旧树。
+      return bailoutOnAlreadyFinishedWork()
+    }
+  }
+  return updateFunctionComponent(current, workInProgress)
+}
+function updateMemoComponent(
+  current: Fiber | null,
+  workInProgress: Fiber
+): Fiber | null {
+  // Component：这是 memo 对象 { $$typeof, type, compare }
+  const Component = workInProgress.type
+  // type：这才是真正的组件
+  const type = Component.type
+  // 判断组件是不是初次渲染。
+  // TODO: 从这里开始，代码变的感觉有点绕，后续需要好好理一理。
+  if (current === null) {
+    if (
+      isSimpleFunctionComponent(type) &&
+      Component.compare === null &&
+      Component.defaultProps === undefined
+    ) {
+      workInProgress.type = type
+      workInProgress.tag = SimpleMemoComponent
+      return updateFunctionComponent(current, workInProgress)
+    } else {
+      const child = createFiberFromTypeAndProps(
+        type,
+        null,
+        workInProgress.pendingProps
+      )
+      child.return = workInProgress
+      workInProgress.child = child
+      return child
+    }
+  } else {
+    let compare = Component.compare
+    compare = compare !== null ? compare : shallowEqual
+    if (compare(current.memoizedProps, workInProgress.pendingProps)) {
+      // 退出渲染，复用旧树。
+      return bailoutOnAlreadyFinishedWork()
+    } else {
+      const newChild = createWorkInProgress(
+        current.child as Fiber,
+        workInProgress.pendingProps
+      )
+      newChild.return = workInProgress
+      workInProgress.child = newChild
+      return newChild
+    }
+  }
+}
+
 function reconcileChildren(
   current: Fiber | null,
   workInProgress: Fiber,
@@ -170,4 +242,9 @@ function shouldSetTextContent(type: any, props: any): boolean {
       props.dengerouslySetInnerHTML !== null &&
       props.dengerouslySetInnerHTML.__html != null)
   )
+}
+
+// TODO: 功能待实现。
+function bailoutOnAlreadyFinishedWork(): null {
+  return null
 }
