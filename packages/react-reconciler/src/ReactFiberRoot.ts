@@ -1,6 +1,7 @@
 import { createFiber } from './ReactFiber'
 import type { Container, Fiber, FiberRoot } from './ReactInternalTypes'
 import { HostRoot } from './ReactWorkTags'
+import { NoLanes } from './ReactFiberLane'
 
 type FiberRootNodeCtor = new (containerInfo: Container) => FiberRoot
 export const FiberRootNode: FiberRootNodeCtor = function (
@@ -10,6 +11,7 @@ export const FiberRootNode: FiberRootNodeCtor = function (
   this.containerInfo = containerInfo
   this.current = null as unknown as Fiber
   this.finishedWork = null
+  this.pendingLanes = NoLanes
 } as unknown as FiberRootNodeCtor
 
 export function createFiberRoot(containerInfo: Container): FiberRoot {

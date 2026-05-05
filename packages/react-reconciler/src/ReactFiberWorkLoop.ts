@@ -8,6 +8,9 @@ import {
   flushPassiveEffects,
 } from './ReactFiberCommitWork'
 import { Scheduler, NormalPriority } from '@my-mini-react/scheduler'
+import { type Lane, NoLane, claimNextTransitionLane } from './ReactFiberLane'
+import { getCurrentUpdatePriority } from './ReactEventPriorities'
+import { getCurrentEventPriority } from '@my-mini-react/react-dom-bindings'
 
 type ExecutionContext = number
 
@@ -20,6 +23,8 @@ let executionContext: ExecutionContext = NoContext
 
 let workInProgress: Fiber | null = null
 let workInProgressRoot: FiberRoot | null = null
+
+let workInProgressDeferredLane: Lane = NoLane
 
 /**
  * 从任意 Fiber 节点出发，找到其所属的 FiberRoot，并触发整棵树的渲染。
@@ -129,4 +134,52 @@ function commitRoot(root: FiberRoot): void {
   // commit 阶段结束。
   executionContext = previousExecutionContext
   workInProgressRoot = null
+}
+
+// 获取紧急 update 的 lane。
+/**
+ * 请求当前更新任务的优先级车道 (Lane)
+ *
+ * 核心逻辑：优先复用当前环境上下文，若无则回退至原生事件类型。
+ */
+export function requestUpdateLane(): Lane {
+  const updateLane: Lane = getCurrentUpdatePriority()
+  if (updateLane !== NoLane) {
+    return updateLane
+  }
+  // 这一行是兜底逻辑。如果 React 不知道你是谁（没有上下文），它就会看看浏览器现在发生了什么（window.event），
+  // 如果浏览器也没发生啥（比如定时器），它就给你个默认优先级（DefaultLane），让你慢慢排队去。
+  const eventLane: Lane = getCurrentEventPriority()
+  return eventLane
+}
+
+// 获取非紧急 update 的 lane。
+/**
+ * 请求一个用于「延迟更新」的车道 (Lane)
+ *
+ * 核心作用：
+ * 为 useDeferredValue 或 Suspense 等低优先级任务分配一个专用的 Transition Lane。
+ *
+ * 关键机制：
+ * 1. 惰性分配 (Lazy Allocation)：
+ *    - 只有当真正需要延迟更新时，才去申请车道，而不是预先分配。
+ *
+ * 2. 同一批次复用 (Batching Consistency)：
+ *    - 利用 workInProgressDeferredLane 这个全局变量（实际上是模块级变量）。
+ *    - 如果在同一个渲染流程（Render Phase）中，有多个组件都调用了 useDeferredValue，
+ *      它们会共用同一个 Lane。
+ *    - 目的：确保所有延迟的值能在同一次渲染中同时更新，保持 UI 的一致性，
+ *      避免出现“一部分旧值、一部分新值”的撕裂现象。
+ */
+// 在一次渲染里：requestDeferredLane 确实会让所有 useDeferredValue 共用一个车道。这是为了 UI 一致性。
+// 在多次渲染间：claimNextTransitionLane 会让每次新的输入使用不同的车道。这是为了可中断和防饥饿。
+export function requestDeferredLane(): Lane {
+  // 检查是否已经为当前渲染流程分配过延迟车道
+  if (workInProgressDeferredLane === NoLane) {
+    // 如果还没有，则申请一个新的 Transition Lane
+    // claimNextTransitionLane 会从一个位掩码池中按顺序取下一个可用的低优先级车道
+    workInProgressDeferredLane = claimNextTransitionLane()
+  }
+  // 返回该车道（无论是刚申请的和之前申请过的）
+  return workInProgressDeferredLane
 }

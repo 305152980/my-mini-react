@@ -20,6 +20,7 @@ import {
   REACT_CONTEXT_TYPE,
   REACT_MEMO_TYPE,
 } from '@my-mini-react/shared/ReactSymbols'
+import { NoLanes } from './ReactFiberLane'
 
 /**
  * 创建 Fiber 节点的核心方法
@@ -63,6 +64,8 @@ const FiberNode: FiberCtor = function (
   this.alternate = null
   this.deletions = null
   this.updateQueue = null
+  this.lanes = NoLanes
+  this.childLanes = NoLanes
 } as unknown as FiberCtor
 
 /**
@@ -143,6 +146,8 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
     workInProgress.flags = NoFlags
   }
   workInProgress.flags = current.flags
+  workInProgress.childLanes = current.childLanes
+  workInProgress.lanes = current.lanes
   workInProgress.child = current.child
   workInProgress.memoizedProps = current.memoizedProps
   workInProgress.memoizedState = current.memoizedState

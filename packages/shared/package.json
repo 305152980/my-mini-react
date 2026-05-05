@@ -42,6 +42,11 @@
       "types": "./shallowEqual.ts",
       "import": "./shallowEqual.ts",
       "default": "./shallowEqual.ts"
+    },
+    "./objectIs": {
+      "types": "./objectIs.ts",
+      "import": "./objectIs.ts",
+      "default": "./objectIs.ts"
     }
   },
   "scripts": {

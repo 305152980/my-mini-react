@@ -1,11 +1,21 @@
 import { isFn } from '@my-mini-react/shared/utils'
-import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
+import {
+  scheduleUpdateOnFiber,
+  requestDeferredLane,
+} from './ReactFiberWorkLoop'
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
 import { HostRoot } from './ReactWorkTags'
 import { type Flags, Update, Passive } from './ReactFiberFlags'
 import { type HookFlags, HookLayout, HookPassive } from './ReactHookEffectTags'
 import type { ReactContext } from '@my-mini-react/shared/ReactTypes'
 import { readContext } from './ReactFiberNewContext'
+import {
+  includesOnlyNonUrgentLanes,
+  mergeLanes,
+  type Lanes,
+  NoLanes,
+} from './ReactFiberLane'
+import is from '@my-mini-react/shared/objectIs'
 
 type Hook = {
   memoizedState: any
@@ -28,6 +38,8 @@ let currentlyRenderingFiber: Fiber | null = null
 let currentHook: Hook | null = null
 // 下一个 hook。
 let workInProgressHook: Hook | null = null
+// 当前这一轮渲染需要处理的优先级集合。
+let renderLanes: Lanes = NoLanes
 
 /**
  * 渲染带有 Hooks 的函数组件
@@ -42,8 +54,10 @@ export function renderWithHooks<Props>(
   current: Fiber | null,
   workInProgress: Fiber,
   Component: any,
-  props: Props
+  props: Props,
+  nextRenderLanes: Lanes
 ): any {
+  renderLanes = nextRenderLanes
   // 1. 设置全局渲染指针
   // 将当前正在渲染的 Fiber 节点赋值给一个全局变量。
   // 这是 Hooks 能够工作的关键：useState() 等 Hook 函数不需要接收任何参数，
@@ -85,6 +99,7 @@ function finishRenderingHooks(): void {
 // 2、构建 hook 链表。
 function updateWorkInProgressHook(): Hook {
   let hook: Hook
+  // 拿到当前正在渲染的组件（WorkInProgress）所对应的‘前世’（Current）。
   const current = currentlyRenderingFiber!.alternate
   if (current) {
     // update 阶段。
@@ -96,6 +111,7 @@ function updateWorkInProgressHook(): Hook {
     } else {
       hook = currentlyRenderingFiber!.memoizedState as Hook
       workInProgressHook = hook
+      // 把‘旧组件’（Current Fiber）里保存的 Hook 链表头，赋值给全局指针 currentHook，准备开始读取旧数据。
       currentHook = current.memoizedState
     }
   } else {
@@ -305,4 +321,42 @@ function updateEffectImpl(
 
 export function useContext<T>(context: ReactContext<T>): T {
   return readContext(context)
+}
+
+export function useDeferredValue<T>(value: T): T {
+  // 1. 获取当前正在工作的 Hook 对象
+  // 这个对象保存了该 Hook 的状态（如 memoizedState）和更新队列
+  const hook = updateWorkInProgressHook()
+  // 2. 获取上一次渲染时保存的旧值
+  // 这是实现“延迟”的关键：如果当前渲染被判定为“不紧急”，
+  // 我们会暂时返回这个旧值，而不是最新的 value
+  const prevState: T = hook.memoizedState
+  if (currentHook !== null) {
+    // 更新阶段。
+    if (is(prevState, value)) {
+      // 旧值和最新值相同。
+      return value
+    } else {
+      // 旧值和最新值不同。
+      const shouldDeferValue = !includesOnlyNonUrgentLanes(renderLanes)
+      if (shouldDeferValue) {
+        // （当前更新只包括非紧急更新）的取反即当前更新是紧急更新。
+        // 创建一个 Deferred Lane，并将其添加到当前正在渲染的 Fiber 的 lanes 中。
+        // 这两行代码之所以能触发再次渲染，是因为它们修改了 Fiber 节点的优先级标记（lanes），
+        // 从而“欺骗”了 React 的调度器，告诉它：“嘿，这个节点上还有一个低优先级的任务没做完，请把它加入队列！”
+        const deferredLane = requestDeferredLane()
+        currentlyRenderingFiber!.lanes = mergeLanes(
+          currentlyRenderingFiber!.lanes,
+          deferredLane
+        )
+        return prevState
+      } else {
+        // 当前更新只包括非紧急更新。
+        hook.memoizedState = value
+        return value
+      }
+    }
+  }
+  hook.memoizedState = value
+  return value
 }

@@ -1,5 +1,6 @@
 import type { WorkTag } from './ReactWorkTags'
 import type { Flags } from './ReactFiberFlags'
+import type { Lanes } from './ReactFiberLane'
 
 // React Fiber 节点核心类型定义（Fiber 树的最小单元）
 export type Fiber = {
@@ -51,6 +52,10 @@ export type Fiber = {
   // 存储待处理的更新（如 setState 产生的更新对象链表）。
   // 20260407 在 useLayoutEffect 和 useEffect 中用到过 updateQueue。
   updateQueue: any
+
+  lanes: Lanes
+
+  childLanes: Lanes
 }
 
 // 挂载容器类型：React 应用挂载的 DOM 根节点
@@ -69,4 +74,7 @@ export type FiberRoot = {
   // 【刚构建完成、等待提交】的 Fiber 树 根节点
   // 提交后会将 current 指向它
   finishedWork: Fiber | null
+
+  // 未处理的 Lanes。
+  pendingLanes: Lanes
 }
