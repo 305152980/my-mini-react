@@ -93,6 +93,7 @@ function finishRenderingHooks(): void {
   currentlyRenderingFiber = null
   currentHook = null
   workInProgressHook = null
+  renderLanes = NoLanes
 }
 
 // 1、返回当前 useX 函数对用的 hook。
