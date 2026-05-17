@@ -142,8 +142,8 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
     current.alternate = workInProgress
   } else {
     workInProgress.pendingProps = pendingProps
-    workInProgress.type = current.type
     workInProgress.flags = NoFlags
+    workInProgress.deletions = null
   }
   workInProgress.flags = current.flags
   workInProgress.childLanes = current.childLanes
