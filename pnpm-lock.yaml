@@ -99,6 +99,9 @@ importers:
       '@my-mini-react/shared':
         specifier: workspace:*
         version: link:../packages/shared
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
     devDependencies:
       '@types/react':
         specifier: ^18.3.28

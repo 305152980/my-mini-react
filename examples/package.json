@@ -14,9 +14,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@my-mini-react/shared": "workspace:*",
     "@my-mini-react/react": "workspace:*",
-    "@my-mini-react/react-dom": "workspace:*"
+    "@my-mini-react/react-dom": "workspace:*",
+    "@my-mini-react/shared": "workspace:*",
+    "react": "^18.3.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.28",
