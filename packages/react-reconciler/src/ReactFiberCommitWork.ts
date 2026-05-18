@@ -8,11 +8,11 @@ export function commitMutationEffects(
   root: FiberRoot,
   finishedWork: Fiber
 ): void {
-  recurSivelyTraverseMutationEffects(root, finishedWork)
+  recursivelyTraverseMutationEffects(root, finishedWork)
   commitReconciliationEffects(finishedWork)
 }
 
-function recurSivelyTraverseMutationEffects(
+function recursivelyTraverseMutationEffects(
   root: FiberRoot,
   parentFiber: Fiber
 ): void {
