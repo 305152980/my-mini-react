@@ -161,7 +161,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   workInProgress.key = current.key
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
-  // // dependencies 也需要拷贝（用于 Context 等）
+  // // dependencies 还未实现（用于 Context 等）
   // const currentDependencies = current.dependencies
   // workInProgress.dependencies =
   //   currentDependencies === null
