@@ -91,7 +91,7 @@ export function createFiberFromTypeAndProps(
   } else if (isStr(type)) {
     fiberTag = HostComponent
   } else {
-    if (typeof type === 'object' || type !== null) {
+    if (typeof type === 'object' && type !== null) {
       switch (type.$$typeof) {
         case REACT_PROVIDER_TYPE:
           fiberTag = ContextProvider
@@ -133,27 +133,43 @@ export function createFiberFromElement(element: ReactElement): Fiber {
 
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   let workInProgress = current.alternate
+
   if (workInProgress === null) {
     workInProgress = createFiber(current.tag, pendingProps, current.key)
+
     workInProgress.elementType = current.elementType
     workInProgress.type = current.type
     workInProgress.stateNode = current.stateNode
+
     workInProgress.alternate = current
     current.alternate = workInProgress
   } else {
     workInProgress.pendingProps = pendingProps
+
     workInProgress.flags = NoFlags
+    // // subtreeFlags 还未实现。
+    // workInProgress.subtreeFlags = NoFlags
     workInProgress.deletions = null
+
+    workInProgress.lanes = current.lanes
+    workInProgress.childLanes = current.childLanes
   }
-  workInProgress.flags = current.flags
-  workInProgress.childLanes = current.childLanes
-  workInProgress.lanes = current.lanes
   workInProgress.child = current.child
   workInProgress.memoizedProps = current.memoizedProps
   workInProgress.memoizedState = current.memoizedState
   workInProgress.updateQueue = current.updateQueue
+  workInProgress.key = current.key
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
+  // // dependencies 也需要拷贝（用于 Context 等）
+  // const currentDependencies = current.dependencies
+  // workInProgress.dependencies =
+  //   currentDependencies === null
+  //     ? null
+  //     : {
+  //         lanes: currentDependencies.lanes,
+  //         firstContext: currentDependencies.firstContext,
+  //       }
   return workInProgress
 }
 

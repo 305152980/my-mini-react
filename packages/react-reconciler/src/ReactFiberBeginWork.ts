@@ -120,6 +120,7 @@ function updateFunctionComponent(
   workInProgress: Fiber
 ): Fiber | null {
   const { type, pendingProps } = workInProgress
+  // TODO: 第五个参数没传。
   const children = renderWithHooks(current, workInProgress, type, pendingProps)
   reconcileChildren(current, workInProgress, children)
   return workInProgress.child
