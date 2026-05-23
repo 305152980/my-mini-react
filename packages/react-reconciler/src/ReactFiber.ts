@@ -20,7 +20,7 @@ import {
   REACT_CONTEXT_TYPE,
   REACT_MEMO_TYPE,
 } from '@my-mini-react/shared/ReactSymbols'
-import { NoLanes } from './ReactFiberLane'
+import { NoLanes, type Lanes } from './ReactFiberLane'
 
 /**
  * 创建 Fiber 节点的核心方法
@@ -32,24 +32,27 @@ import { NoLanes } from './ReactFiberLane'
 export function createFiber(
   tag: WorkTag,
   pendingProps: any,
-  key: null | string
+  key: null | string,
+  lanes: Lanes
 ): Fiber {
-  return new FiberNode(tag, pendingProps, key)
+  return new FiberNode(tag, pendingProps, key, lanes)
 }
 
 type FiberCtor = new (
   tag: WorkTag,
   pendingProps: unknown,
-  key: string | null
+  key: string | null,
+  lanes: Lanes
 ) => Fiber
 const FiberNode: FiberCtor = function (
   this: Fiber,
   tag: WorkTag,
   pendingProps: unknown,
-  key: null | string
+  key: null | string,
+  lanes: Lanes
 ): void {
   this.tag = tag
-  this.key = key
+  this.key = key || null
   this.elementType = null
   this.type = null
   this.stateNode = null
@@ -61,10 +64,11 @@ const FiberNode: FiberCtor = function (
   this.memoizedProps = null
   this.memoizedState = null
   this.flags = NoFlags
+  this.subtreeFlags = NoFlags
   this.alternate = null
   this.deletions = null
   this.updateQueue = null
-  this.lanes = NoLanes
+  this.lanes = lanes
   this.childLanes = NoLanes
 } as unknown as FiberCtor
 
@@ -79,7 +83,8 @@ const FiberNode: FiberCtor = function (
 export function createFiberFromTypeAndProps(
   type: any,
   key: null | string,
-  pendingProps: any
+  pendingProps: any,
+  lanes: Lanes
 ): Fiber {
   let fiberTag: WorkTag = IndeterminateComponent
   if (isFn(type)) {
@@ -91,7 +96,7 @@ export function createFiberFromTypeAndProps(
   } else if (isStr(type)) {
     fiberTag = HostComponent
   } else {
-    if (typeof type === 'object' || type !== null) {
+    if (typeof type === 'object' && type !== null) {
       switch (type.$$typeof) {
         case REACT_PROVIDER_TYPE:
           fiberTag = ContextProvider
@@ -113,7 +118,7 @@ export function createFiberFromTypeAndProps(
       }
     }
   }
-  const fiber = createFiber(fiberTag, pendingProps, key)
+  const fiber = createFiber(fiberTag, pendingProps, key, lanes)
   fiber.elementType = type
   fiber.type = type
   return fiber
@@ -125,40 +130,69 @@ export function createFiberFromTypeAndProps(
  * @param element - JSX 转换后的虚拟 DOM 对象
  * @returns 可用于渲染的 Fiber 节点
  */
-export function createFiberFromElement(element: ReactElement): Fiber {
+export function createFiberFromElement(
+  element: ReactElement,
+  lanes: Lanes
+): Fiber {
   const { type, key, props: pendingProps } = element
-  const fiber = createFiberFromTypeAndProps(type, key, pendingProps)
+  const fiber = createFiberFromTypeAndProps(type, key, pendingProps, lanes)
   return fiber
 }
 
-export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
+export function createWorkInProgress(
+  current: Fiber,
+  pendingProps: any,
+  lanes: Lanes
+): Fiber {
   let workInProgress = current.alternate
+
   if (workInProgress === null) {
-    workInProgress = createFiber(current.tag, pendingProps, current.key)
+    // 【Mount 阶段】首次渲染，需要创建全新的 workInProgress 节点
+    workInProgress = createFiber(current.tag, pendingProps, current.key, lanes)
+
+    // 拷贝不可变的基础属性
     workInProgress.elementType = current.elementType
     workInProgress.type = current.type
     workInProgress.stateNode = current.stateNode
+
+    // 建立双缓冲（Double Buffering）的双向链接
     workInProgress.alternate = current
     current.alternate = workInProgress
   } else {
+    // 【Update 阶段】复用已有的 workInProgress 节点
     workInProgress.pendingProps = pendingProps
-    workInProgress.type = current.type
+
+    // 必须重置上一轮遗留的副作用标记，防止污染本轮渲染
     workInProgress.flags = NoFlags
+    workInProgress.subtreeFlags = NoFlags
+    workInProgress.deletions = null
+
+    // Update 阶段，继承 current 的 lanes（历史积累的更新优先级）。
+    workInProgress.lanes = current.lanes
+    workInProgress.childLanes = current.childLanes
   }
-  workInProgress.flags = current.flags
-  workInProgress.childLanes = current.childLanes
-  workInProgress.lanes = current.lanes
+  // 【公共属性拷贝】无论创建还是复用，以下属性都需要从 current 继承过来
   workInProgress.child = current.child
   workInProgress.memoizedProps = current.memoizedProps
   workInProgress.memoizedState = current.memoizedState
   workInProgress.updateQueue = current.updateQueue
+  workInProgress.key = current.key
   workInProgress.sibling = current.sibling
   workInProgress.index = current.index
+  // // dependencies 还未实现（用于 Context 等）
+  // const currentDependencies = current.dependencies
+  // workInProgress.dependencies =
+  //   currentDependencies === null
+  //     ? null
+  //     : {
+  //         lanes: currentDependencies.lanes,
+  //         firstContext: currentDependencies.firstContext,
+  //       }
   return workInProgress
 }
 
-export function createFiberFromText(content: string): Fiber {
-  const fiber = createFiber(HostText, content, null)
+export function createFiberFromText(content: string, lanes: Lanes): Fiber {
+  const fiber = createFiber(HostText, content, null, lanes)
   return fiber
 }
 

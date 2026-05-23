@@ -1,21 +1,36 @@
 import type { Fiber, FiberRoot } from './ReactInternalTypes'
-import { Placement, ChildDeletion, Update, Passive } from './ReactFiberFlags'
+import {
+  Placement,
+  ChildDeletion,
+  Update,
+  Passive,
+  MutationMask,
+} from './ReactFiberFlags'
 import { FunctionComponent, HostComponent, HostRoot } from './ReactWorkTags'
 import { isHost } from './ReactFiberCompleteWork'
-import { HookLayout, HookPassive, type HookFlags } from './ReactHookEffectTags'
+import {
+  HookLayout,
+  HookPassive,
+  NoFlags,
+  type HookFlags,
+} from './ReactHookEffectTags'
 
 export function commitMutationEffects(
   root: FiberRoot,
   finishedWork: Fiber
 ): void {
-  recurSivelyTraverseMutationEffects(root, finishedWork)
+  recursivelyTraverseMutationEffects(root, finishedWork)
   commitReconciliationEffects(finishedWork)
 }
 
-function recurSivelyTraverseMutationEffects(
+function recursivelyTraverseMutationEffects(
   root: FiberRoot,
   parentFiber: Fiber
 ): void {
+  // 【新增优化】如果子树没有任何副作用标记，直接跳过，不再向下递归
+  if ((parentFiber.subtreeFlags & MutationMask) === NoFlags) {
+    return
+  }
   let child = parentFiber.child
   while (child !== null) {
     commitMutationEffects(root, child)

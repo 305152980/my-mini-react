@@ -43,6 +43,10 @@ export type Fiber = {
   // 副作用标记（标记节点需要执行的操作：插入、更新、删除、挂载、卸载等）
   flags: Flags
 
+  // 记录了当前 Fiber 节点的所有后代节点中，是否存在需要执行的副作用（如插入、更新、删除等）。
+  // 在提交（commit）阶段，React 会根据这个标记来快速判断是否需要遍历当前节点的子树。
+  subtreeFlags: Flags
+
   // 双缓存机制：指向另一棵 Fiber 树的对应节点（current <-> workInProgress）
   alternate: Fiber | null
 

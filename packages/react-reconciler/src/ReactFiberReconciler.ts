@@ -1,14 +1,19 @@
 import { type ReactNodeList } from '@my-mini-react/shared/ReactTypes'
 import { type FiberRoot } from './ReactInternalTypes'
-import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
+import { requestUpdateLane, scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
+import {
+  createUpdate,
+  enqueueUpdate,
+  type UpdateQueue,
+} from './ReactFiberClassUpdateQueue'
 
 export function updateContainer(
   element: ReactNodeList,
   container: FiberRoot
 ): void {
-  // 1、获取 current。
-  const current = container.current
-  current.memoizedState = { element }
-  // 2、调度更新。
-  scheduleUpdateOnFiber(container, current)
+  const hostRootFiber = container.current
+  const lane = requestUpdateLane()
+  const update = createUpdate<ReactNodeList>(element, lane)
+  enqueueUpdate(hostRootFiber.updateQueue as UpdateQueue<ReactNodeList>, update)
+  scheduleUpdateOnFiber(hostRootFiber, lane)
 }

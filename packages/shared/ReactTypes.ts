@@ -48,3 +48,9 @@ export type ReactProviderType<T> = {
   $$typeof: symbol | number
   _context: ReactContext<T>
 }
+
+/**
+ * setState 或 useReducer 中 action 的类型：
+ * 可以是新状态值本身，也可以是一个接收前一状态并返回新状态的更新函数
+ */
+export type Action<State> = State | ((prevState: State) => State)

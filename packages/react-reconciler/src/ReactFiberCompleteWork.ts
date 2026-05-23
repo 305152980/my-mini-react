@@ -18,6 +18,8 @@ import {
   updateFiberProps,
 } from '@my-mini-react/react-dom-bindings'
 import { registrationNameDependencies } from '@my-mini-react/react-dom-bindings'
+import { NoFlags } from './ReactHookEffectTags'
+import { mergeLanes, NoLanes } from './ReactFiberLane'
 
 export function completeWork(
   current: Fiber | null,
@@ -32,9 +34,11 @@ export function completeWork(
     case MemoComponent:
     case SimpleMemoComponent:
     case ContextConsumer:
+      bubbleProperties(workInProgress)
       return null
     case ContextProvider:
       popProvider(workInProgress.type._context)
+      bubbleProperties(workInProgress)
       return null
     case HostComponent:
       if (current !== null) {
@@ -52,6 +56,7 @@ export function completeWork(
       }
       precacheFiberNode(workInProgress, workInProgress.stateNode as Element)
       updateFiberProps(workInProgress.stateNode as Element, newProps)
+      bubbleProperties(workInProgress)
       return null
     case HostText:
       if (current !== null) {
@@ -69,6 +74,7 @@ export function completeWork(
       }
       precacheFiberNode(workInProgress, workInProgress.stateNode as Text)
       updateFiberProps(workInProgress.stateNode as Text, newProps)
+      bubbleProperties(workInProgress)
       return null
     // TODO
   }
@@ -149,4 +155,33 @@ function updateHostComponent(
     current.memoizedProps,
     newProps
   )
+}
+
+// 1. 副作用冒泡（收集 SubtreeFlags）
+// 2. 优先级合并（收集 ChildLanes）
+// 3. 确保 Fiber 树连接的正确性
+function bubbleProperties(workInProgress: Fiber): void {
+  let subtreeFlags = NoFlags
+  let newChildLanes = NoLanes
+  let child = workInProgress.child
+
+  while (child !== null) {
+    // 合并副作用标记。
+    subtreeFlags |= child.subtreeFlags
+    subtreeFlags |= child.flags
+
+    // 合并子树的优先级 Lanes。
+    newChildLanes = mergeLanes(
+      newChildLanes,
+      mergeLanes(child.lanes, child.childLanes)
+    )
+
+    // 打上父级路标，确保向上回溯。（这个操作在 beginWork 中已经做了，这里是防御性编程。）
+    child.return = workInProgress
+    child = child.sibling
+  }
+
+  // 将收集到的副作用和优先级赋值给当前父节点。
+  workInProgress.subtreeFlags |= subtreeFlags
+  workInProgress.childLanes = newChildLanes
 }

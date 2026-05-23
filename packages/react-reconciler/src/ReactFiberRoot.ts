@@ -2,6 +2,7 @@ import { createFiber } from './ReactFiber'
 import type { Container, Fiber, FiberRoot } from './ReactInternalTypes'
 import { HostRoot } from './ReactWorkTags'
 import { NoLanes } from './ReactFiberLane'
+import { initializeUpdateQueue } from './ReactFiberClassUpdateQueue'
 
 type FiberRootNodeCtor = new (containerInfo: Container) => FiberRoot
 export const FiberRootNode: FiberRootNodeCtor = function (
@@ -16,8 +17,9 @@ export const FiberRootNode: FiberRootNodeCtor = function (
 
 export function createFiberRoot(containerInfo: Container): FiberRoot {
   const root: FiberRoot = new FiberRootNode(containerInfo)
-  const uninitializedFiber: Fiber = createFiber(HostRoot, null, null)
+  const uninitializedFiber: Fiber = createFiber(HostRoot, null, null, NoLanes)
   root.current = uninitializedFiber
   uninitializedFiber.stateNode = root
+  initializeUpdateQueue(uninitializedFiber)
   return root
 }
