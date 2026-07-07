@@ -105,7 +105,7 @@ function performWorkUntilDeadline(): void {
       hasMoreWork = flushWork(currentTime)
     } finally {
       if (hasMoreWork) {
-        performWorkUntilDeadline()
+        schedulePerformWorkUntilDeadline()
       } else {
         isMessageLoopRunning = false
         startTime = -1
