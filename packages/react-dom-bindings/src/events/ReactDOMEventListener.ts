@@ -6,6 +6,7 @@ import {
   IdleEventPriority,
   ContinuousEventPriority,
   type EventPriority,
+  type Fiber,
 } from '@my-mini-react/react-reconciler'
 import { type DOMEventName } from './DOMEventNames'
 import {
@@ -26,7 +27,6 @@ import {
 import { getClosestInstanceFromNode } from '../client/ReactDOMComponentTree'
 import { invokeGuardedCallbackAndCatchFirstError } from '@my-mini-react/shared/ReactErrorUtils'
 import { type ReactSyntheticEvent } from './ReactSyntheticEventType'
-import { type Fiber } from '@my-mini-react/react-reconciler'
 
 function dispatchDiscreteEvent(
   domEventName: DOMEventName,
