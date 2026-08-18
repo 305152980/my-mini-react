@@ -1,7 +1,7 @@
 import { REACT_MEMO_TYPE } from '@my-mini-react/shared/ReactSymbols'
 
 export function memo<Props>(
-  type: any,
+  type: any, // React$ElementType
   compare?: (oldProps: Props, newProps: Props) => boolean
 ): any {
   const elementType = {

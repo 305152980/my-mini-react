@@ -30,7 +30,7 @@ function shallowEqual(objA: unknown, objB: unknown): boolean {
 
   // 遍历所有属性，检查 objB 是否包含相同属性且值相等
   for (let i = 0; i < keysA.length; i++) {
-    const currentKey = keysA[i]
+    const currentKey = keysA[i]!
     if (
       !hasOwnProperty.call(objB, currentKey) ||
       !is(

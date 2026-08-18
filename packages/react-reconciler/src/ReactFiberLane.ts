@@ -273,7 +273,7 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   }
   // 从所有待处理任务中，提取出优先级最高的那些 Lanes。
   // 注意：这里简化了逻辑，实际源码会先排除掉 Suspended (挂起) 和 Idle (空闲) 的任务。
-  let nextLanes = getHighestPriorityLanes(pendingLanes)
+  const nextLanes = getHighestPriorityLanes(pendingLanes)
   if (nextLanes === NoLane) {
     // 再次检查，如果筛选后为空，直接返回
     return NoLanes
@@ -315,4 +315,66 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   // 【决策结果：插队成功】
   // 返回 nextLanes，调度器将暂停当前工作，转而去处理这批更高优先级的任务。
   return nextLanes
+}
+
+// 一个特殊的时间戳常量，用于表示“无效”或“未设置”的时间状态。
+export const NoTimestamp = -1
+
+/**
+ * 将指定的更新优先级（Lane）标记到根节点上。
+ * 通过合并操作，把新的 lane 添加到根节点的待处理任务队列（pendingLanes）中。
+ *
+ * @param root - 应用的 Fiber 根节点
+ * @param lane - 需要标记的新更新优先级（Lane）
+ */
+export function markRootUpdated(root: FiberRoot, lane: Lane): void {
+  root.pendingLanes = mergeLanes(root.pendingLanes, lane)
+}
+
+/**
+ * @description 标记当前 FiberRoot 中已完成处理的 Lanes，并清理相关的状态与元数据。
+ *
+ * @param root FiberRoot - 当前的根节点对象。
+ * @param remainingLanes Lanes - 经过合并计算后，还需要继续处理的剩余 Lanes。
+ */
+export function markRootFinished(root: FiberRoot, remainingLanes: Lanes): void {
+  // 在此次 Render（渲染）过程中已经被处理过、且不需要再继续执行的 Lanes。
+  const noLongerPendingLanes = root.pendingLanes & ~remainingLanes
+
+  // 重置根节点的 pendingLanes，只保留那些仍然需要继续处理的 Lanes。
+  root.pendingLanes = remainingLanes
+
+  // 遍历所有已完成的 Lanes，逐个清理它们占用的资源。
+  let lanes = noLongerPendingLanes
+  while (lanes > 0) {
+    // 0b00100 -> 2 -> 0b100
+    // 0b10100 -> 4 -> 0b10000
+    // 0b11100 -> 4 -> 0b10000
+    // 0b10000000 -> 7 -> 0b10000000
+    const index = pickArbitraryLaneIndex(lanes)
+    const lane = 1 << index
+
+    // 待实现。
+
+    // 从待清理的 lanes 掩码中移除当前已处理的这一个 lane，推进循环。
+    lanes &= ~lane
+  }
+}
+
+/**
+ * 从车道集合中选择一个任意的车道
+ *
+ * 作用：
+ * - 从多个车道中选择一个车道
+ * - 选择最高优先级的车道
+ *
+ * 为什么选择最高优先级？
+ * - 因为高优先级的更新应该先处理
+ * - 防止低优先级的更新阻塞高优先级的更新
+ *
+ * @param lanes - 车道集合（位掩码）
+ * @returns 选择的车道（单个车道）
+ */
+export function pickArbitraryLane(lanes: Lanes): Lane {
+  return getHighestPriorityLane(lanes)
 }

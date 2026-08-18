@@ -1,5 +1,5 @@
 // ReactEventPriorities.ts（或者更准确地说是优先级相关的逻辑，如 ReactFiberLane.ts 中的定义）之所以放在 react-reconciler 中，
-// 而不是 react-dom-bindings（或 react-dom）中，
+// 而不是 react-dom 中，
 // 核心原因在于：React 的架构设计遵循“宿主环境（Host）无关”的原则，且优先级的判断本质上是“调度决策”的一部分，而非单纯的“事件绑定”细节。
 
 import {
@@ -76,4 +76,12 @@ export function lanesToEventPriority(lanes: Lanes): EventPriority {
     return DefaultEventPriority
   }
   return IdleEventPriority
+}
+
+// 比较两个事件优先级，返回较低的那个。
+export function lowerEventPriority(
+  a: EventPriority,
+  b: EventPriority
+): EventPriority {
+  return a === 0 || a > b ? a : b
 }

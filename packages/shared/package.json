@@ -8,11 +8,6 @@
   "license": "MIT",
   "private": true,
   "exports": {
-    ".": {
-      "types": "./index.ts",
-      "import": "./index.ts",
-      "default": "./index.ts"
-    },
     "./utils": {
       "types": "./utils.ts",
       "import": "./utils.ts",
@@ -47,9 +42,25 @@
       "types": "./objectIs.ts",
       "import": "./objectIs.ts",
       "default": "./objectIs.ts"
+    },
+    "./ReactInstanceMap": {
+      "types": "./ReactInstanceMap.ts",
+      "import": "./ReactInstanceMap.ts",
+      "default": "./ReactInstanceMap.ts"
+    },
+    "./ReactSharedInternals": {
+      "types": "./ReactSharedInternals.ts",
+      "import": "./ReactSharedInternals.ts",
+      "default": "./ReactSharedInternals.ts"
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@my-mini-react/react": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

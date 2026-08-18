@@ -6,7 +6,7 @@ export type Node = {
 export type Heap<T extends Node> = Array<T>
 
 export function peek<T extends Node>(heap: Heap<T>): T | null {
-  return heap.length === 0 ? null : heap[0]
+  return heap.length === 0 ? null : heap[0]!
 }
 
 export function push<T extends Node>(heap: Heap<T>, node: T): void {
@@ -18,7 +18,7 @@ function siftUp<T extends Node>(heap: Heap<T>, node: T, i: number): void {
   let index = i
   while (index > 0) {
     const parentIndex = (index - 1) >>> 1
-    const parent = heap[parentIndex]
+    const parent = heap[parentIndex]!
     if (compare(parent, node) > 0) {
       heap[parentIndex] = node
       heap[index] = parent
@@ -33,7 +33,7 @@ export function pop<T extends Node>(heap: Heap<T>): T | null {
   if (heap.length === 0) {
     return null
   }
-  const first = heap[0]
+  const first = heap[0]!
   const last = heap.pop()
   if (last !== first) {
     heap[0] = last!
@@ -47,9 +47,10 @@ function siftDown<T extends Node>(heap: Heap<T>, node: T, i: number): void {
   const halfLength = length >>> 1
   while (index < halfLength) {
     const leftIndex = (index + 1) * 2 - 1
-    const left = heap[leftIndex]
+    const left = heap[leftIndex]!
     const rightIndex = leftIndex + 1
-    const right = heap[rightIndex]
+    // 虽然 heap[rightIndex] 可能越界导致 right 为 undefined，但是下方使用 right 的地方都是不会越界的场景。
+    const right = heap[rightIndex] as T
     if (compare(left, node) < 0) {
       if (rightIndex < length && compare(right, left) < 0) {
         heap[index] = right

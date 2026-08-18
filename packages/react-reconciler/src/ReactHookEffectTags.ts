@@ -4,6 +4,6 @@ export const NoFlags = /*                          */ 0b0000
 
 export const HasEffect = /*                        */ 0b0001
 
-export const HookInsetion = /*                     */ 0b0010
-export const HookLayout = /*                       */ 0b0100
-export const HookPassive = /*                      */ 0b1000
+export const Insetion = /*                     */ 0b0010
+export const Layout = /*                       */ 0b0100
+export const Passive = /*                      */ 0b1000

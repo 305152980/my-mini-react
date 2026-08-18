@@ -1,19 +1,34 @@
 import { type ReactNodeList } from '@my-mini-react/shared/ReactTypes'
-import { type FiberRoot } from './ReactInternalTypes'
-import { requestUpdateLane, scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
+import type { FiberRoot } from './ReactInternalTypes'
 import {
-  createUpdate,
-  enqueueUpdate,
-  type UpdateQueue,
-} from './ReactFiberClassUpdateQueue'
+  requestUpdateLane,
+  requestEventTime,
+  scheduleUpdateOnFiber,
+} from './ReactFiberWorkLoop'
+import { createUpdate, enqueueUpdate } from './ReactFiberClassUpdateQueue'
+import { createFiberRoot } from './ReactFiberRoot'
+import type { Lane } from './ReactFiberLane'
+import type { Container } from 'ReactFiberHostConfig'
+
+export function createContainer(containerInfo: Container): FiberRoot {
+  return createFiberRoot(containerInfo)
+}
 
 export function updateContainer(
   element: ReactNodeList,
   container: FiberRoot
-): void {
-  const hostRootFiber = container.current
-  const lane = requestUpdateLane()
-  const update = createUpdate<ReactNodeList>(element, lane)
-  enqueueUpdate(hostRootFiber.updateQueue as UpdateQueue<ReactNodeList>, update)
-  scheduleUpdateOnFiber(hostRootFiber, lane)
+): Lane {
+  const current = container.current
+  const eventTime = requestEventTime()
+  const lane = requestUpdateLane(current)
+
+  const update = createUpdate(eventTime, lane)
+  update.payload = { element }
+
+  const root = enqueueUpdate(current, update, lane)
+  if (root !== null) {
+    scheduleUpdateOnFiber(root, current, lane, eventTime)
+  }
+
+  return lane
 }
