@@ -23,14 +23,14 @@ const packageJson = {
     vitest: '4.1.5',
 
     // rollup 打包相关：
-    rollup: '4.62.4',
-    rimraf: '6.1.3',
-    'rollup-plugin-generate-package-json': '3.2.0',
-    '@rollup/plugin-alias': '^5.1.1',
-    '@rollup/plugin-replace': '6.0.3',
-    'rollup-plugin-typescript2': '0.37.0',
-    '@rollup/plugin-commonjs': '29.0.3',
-    '@rollup/plugin-node-resolve': '16.0.3',
+    rollup: '4.62.4', // 打包工具，将多个模块合并打包为 bundle。
+    rimraf: '6.1.3', // // 跨平台的 "rm -rf"，构建前清理 dist 目录。
+    'rollup-plugin-generate-package-json': '3.2.0', // 构建时自动生成 package.json 到输出目录。
+    '@rollup/plugin-alias': '6.0.0', // 模块路径别名替换（如 ReactFiberHostConfig → 具体实现文件）。
+    '@rollup/plugin-replace': '6.0.3', // 构建时字符串替换。
+    '@rollup/plugin-commonjs': '29.0.3', // 将 node_modules 中的 CommonJS 模块转换为 ESM 模块。
+    '@rollup/plugin-node-resolve': '16.0.3', // 让 Rollup 能解析 node_modules 中的模块。没有它，Rollup 只能解析相对路径（./foo）和绝对路径，不能解析裸模块名。
+    'rollup-plugin-esbuild': '6.2.1', // 用 esbuild 将 TypeScript 转换为 JavaScript（剥离类型，不做类型检查）。
   },
 }
 

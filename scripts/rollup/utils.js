@@ -1,9 +1,13 @@
 import path from 'path'
 import fs from 'fs'
-import typescript2 from 'rollup-plugin-typescript2'
-import commonjs from '@rollup/plugin-commonjs'
-import replace from '@rollup/plugin-replace'
+import { fileURLToPath } from 'url'
 import resolve from '@rollup/plugin-node-resolve'
+import replace from '@rollup/plugin-replace'
+import commonjs from '@rollup/plugin-commonjs'
+import esbuild from 'rollup-plugin-esbuild'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const packageParentPathDev = path.resolve(__dirname, '../../packages')
 const packageParentPathBuild = path.resolve(
@@ -28,15 +32,18 @@ export function resolvePackagePath(packageFolderNameDev) {
 }
 
 export function getBaseRollupPlugins(
-  { aliasParams = { preventAssignment: true }, typescript2Params = {} } = {
+  {
+    aliasParams = { preventAssignment: true },
+    esbuildParams = { include: /\.[tj]s$/ },
+  } = {
     aliasParams: { preventAssignment: true },
-    typescript2Params: {},
+    esbuildParams: { include: /\.[tj]s$/ },
   }
 ) {
   return [
     resolve({ preferBuiltins: false }),
     replace(aliasParams),
     commonjs(),
-    typescript2(typescript2Params),
+    esbuild(esbuildParams),
   ]
 }

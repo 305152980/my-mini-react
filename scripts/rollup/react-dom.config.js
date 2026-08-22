@@ -2,7 +2,7 @@ import {
   getPackageJSONDev,
   resolvePackagePath,
   getBaseRollupPlugins,
-} from './utils'
+} from './utils.js'
 import generatePackageJson from 'rollup-plugin-generate-package-json'
 import alias from '@rollup/plugin-alias'
 
@@ -25,14 +25,10 @@ export default [
     },
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
       generatePackageJson({
@@ -82,14 +78,10 @@ export default [
     },
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
     ],
@@ -103,14 +95,10 @@ export default [
     },
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
     ],
@@ -132,14 +120,10 @@ export default [
     ],
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
     ],
@@ -154,14 +138,10 @@ export default [
     },
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
     ],
@@ -175,14 +155,10 @@ export default [
     },
     external: ['@my-mini-react/react', '@my-mini-react/scheduler'],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       alias({
         entries: {
-          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
     ],

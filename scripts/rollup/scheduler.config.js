@@ -2,7 +2,7 @@ import {
   getPackageJSONDev,
   resolvePackagePath,
   getBaseRollupPlugins,
-} from './utils'
+} from './utils.js'
 import generatePackageJson from 'rollup-plugin-generate-package-json'
 
 const { exports } = getPackageJSONDev('scheduler')
@@ -21,11 +21,7 @@ export default [
     },
     external: [],
     plugins: [
-      ...getBaseRollupPlugins({
-        typescript2Params: {
-          tsconfig: `${packagePathDev}/tsconfig.json`,
-        },
-      }),
+      ...getBaseRollupPlugins(),
       generatePackageJson({
         inputFolder: packagePathDev,
         outputFolder: packagePathBuild,
@@ -60,11 +56,7 @@ export default [
       exports: 'auto',
     },
     external: [],
-    plugins: getBaseRollupPlugins({
-      typescript2Params: {
-        tsconfig: `${packagePathDev}/tsconfig.json`,
-      },
-    }),
+    plugins: getBaseRollupPlugins(),
   },
   {
     input: `${packagePathDev}/${exports['.']['import']}`,
@@ -74,10 +66,6 @@ export default [
       sourcemap: true,
     },
     external: [],
-    plugins: getBaseRollupPlugins({
-      typescript2Params: {
-        tsconfig: `${packagePathDev}/tsconfig.json`,
-      },
-    }),
+    plugins: getBaseRollupPlugins(),
   },
 ]
