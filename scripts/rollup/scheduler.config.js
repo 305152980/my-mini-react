@@ -5,21 +5,21 @@ import {
 } from './utils'
 import generatePackageJson from 'rollup-plugin-generate-package-json'
 
-const { exports } = getPackageJSONDev('react')
-const { packagePathDev, packagePathBuild } = resolvePackagePath('react')
+const { exports } = getPackageJSONDev('scheduler')
+const { packagePathDev, packagePathBuild } = resolvePackagePath('scheduler')
 
 export default [
   {
     input: `${packagePathDev}/${exports['.']['default']}`,
     output: {
       file: `${packagePathBuild}/umd/index.js`,
-      name: 'MyMiniReactReact',
+      name: 'MyMiniReactScheduler',
       format: 'umd',
       sourcemap: true,
       exports: 'auto',
-      globals: {}, // 当打包成 UMD 或 IIFE 格式时，告诉 Rollup 外部依赖对应的全局变量名是什么。
+      globals: {},
     },
-    external: [], // 声明外部依赖。
+    external: [],
     plugins: [
       ...getBaseRollupPlugins({
         typescript2Params: {

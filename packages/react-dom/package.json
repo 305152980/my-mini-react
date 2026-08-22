@@ -30,7 +30,10 @@
     "@my-mini-react/scheduler": "workspace:*",
     "@my-mini-react/shared": "workspace:*"
   },
+  "peerDependencies": {
+    "@my-mini-react/react": "workspace:*"
+  },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@my-mini-react/react": "workspace:*"
   }
 }

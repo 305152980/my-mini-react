@@ -4,7 +4,7 @@
     "skipLibCheck": true, 
 
     "rootDir": ".",
-    "outDir": "../../dist/scheduler",
+    "outDir": "../../dist/node_modules/@my-mini-react/scheduler",
     "paths": {},
 
     "target": "esnext",

@@ -23,8 +23,5 @@
   "dependencies": {
     "@my-mini-react/scheduler": "workspace:*",
     "@my-mini-react/shared": "workspace:*"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3"
   }
 }

@@ -21,6 +21,16 @@ const packageJson = {
 
     // 测试：
     vitest: '4.1.5',
+
+    // rollup 打包相关：
+    rollup: '4.62.4',
+    rimraf: '6.1.3',
+    'rollup-plugin-generate-package-json': '3.2.0',
+    '@rollup/plugin-alias': '^5.1.1',
+    '@rollup/plugin-replace': '6.0.3',
+    'rollup-plugin-typescript2': '0.37.0',
+    '@rollup/plugin-commonjs': '29.0.3',
+    '@rollup/plugin-node-resolve': '16.0.3',
   },
 }
 

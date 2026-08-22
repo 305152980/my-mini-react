@@ -4,7 +4,7 @@
     "skipLibCheck": true, 
 
     "rootDir": ".",
-    "outDir": "../../dist/react-dom",
+    "outDir": "../../dist/node_modules/@my-mini-react/react-dom",
     "paths": {},
 
     "target": "esnext",

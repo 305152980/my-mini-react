@@ -57,10 +57,10 @@
   "scripts": {
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@my-mini-react/react": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@my-mini-react/react": "workspace:*"
   }
 }
