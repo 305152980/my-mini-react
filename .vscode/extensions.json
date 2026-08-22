@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    // 简体中文语言包。
+    "MS-CEINTL.vscode-language-pack-zh-hans",
+    // 本地实时预览服务器。
+    "ritwickdey.LiveServer",
+    // 快速在浏览器中打开文件。
+    "techer.open-in-browser",
+    // 在 VS Code 中直接测试 API 请求。
+    "humao.rest-client",
+    // Git 增强工具。
+    "eamodio.gitlens",
+    // ESLint 代码检查。
+    "dbaeumer.vscode-eslint",
+    // Prettier 代码格式化。
+    "esbenp.prettier-vscode",
+    // CSS/SCSS/Less 代码检查。
+    "stylelint.vscode-stylelint",
+    // Vue 官方插件。
+    "Vue.volar",
+  ]
+}

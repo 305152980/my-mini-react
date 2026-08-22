@@ -793,7 +793,18 @@ function commitRoot(root: FiberRoot): void {
 }
 
 function commitRootImpl(root: FiberRoot): void {
-  // 我严重怀疑 do-while 可以删除，没有实际作用。
+  // 源码注释：
+  //   `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
+  //   means `flushPassiveEffects` will sometimes result in additional
+  //   passive effects. So we need to keep flushing in a loop until there are
+  //   no more pending effects.
+  //   TODO: Might be better if `flushPassiveEffects` did not automatically
+  //   flush synchronous work at the end, to avoid factoring hazards like this.
+  // 我的理解：
+  //   由于调度阶段的存在，为保证下一次 commit 阶段执行前“本次 commit 阶段调度的 useEffect”均已执行，
+  //   commit 阶段会在入口处执行 flushPassiveEffects 方法，以保证本次 commit 阶段执行时，不存在“还在调度中，未执行的 useEffect”。
+  //   flushPassiveEffects 方法之所以包裹在 do...while 循环中，是因为该方法中会执行 flushSyncCallbacks 方法，遍历并执行所有“被调度的同步更新”。
+  //   在更新执行过程中，“useEffect 的声明阶段”可能又会标记 HasEffect tag，所以需要循环执行 flushPassiveEffects 方法直到所有遗留的 useEffect 回调都执行完毕。
   do {
     flushPassiveEffects()
   } while (rootWithPendingPassiveEffects !== null)
