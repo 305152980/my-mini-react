@@ -152,7 +152,7 @@ export function scheduleUpdateOnFiber(
   // checkForNestedUpdates()
 
   // 在应用根节点 (FiberRoot) 的 pendingLanes 属性上标记此次更新的优先级。
-  markRootUpdated(root, lane)
+  markRootUpdated(root, lane, eventTime)
 
   // 这里的源码是 (executionContext & RenderContext) !== NoLanes，是错的。
   // RenderContext 阶段如果触发了任务调度，在这里会被拦截，进而无法立刻实现任务调度。（该任务的调度被延后。）
@@ -355,7 +355,7 @@ function flushPassiveEffectsImpl(): boolean {
 /**
  * 同步模式下的根节点工作入口
  */
-function performSyncWorkOnRoot(root: FiberRoot): void {
+function performSyncWorkOnRoot(root: FiberRoot): null {
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // executionContext 里已经包含了 RenderContext 或 CommitContext 中的至少一个，
     // 说明当前正在执行 Render 或 Commit 阶段了，不能再进入另一个 Render 或 Commit 阶段了，这种情况不应该发生。
@@ -374,7 +374,7 @@ function performSyncWorkOnRoot(root: FiberRoot): void {
   // 如果拿到的 Lanes 集合里不包含同步优先级（SyncLane），说明当前没有同步任务需要处理了。
   if ((lanes & SyncLane) === NoLanes) {
     ensureRootIsScheduled(root)
-    return
+    return null
   }
 
   // 进入 Render 阶段：同步地构建/更新 Fiber 树
@@ -402,6 +402,7 @@ function performSyncWorkOnRoot(root: FiberRoot): void {
   // 在函数退出前，重新调度一次，确保 Commit 阶段（如 useLayoutEffect）中触发的新更新能被正常安排到下一轮。
   // 如果没有调用 ensureRootIsScheduled(root)，最直接的后果是：如果在 Commit 阶段（特别是执行 useLayoutEffect 时）触发了新的更新，这些新更新将会被“卡死”，永远不会被渲染到页面上。
   ensureRootIsScheduled(root)
+  return null
 }
 
 /**

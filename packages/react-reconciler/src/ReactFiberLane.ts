@@ -3,7 +3,9 @@ import { type FiberRoot } from './ReactInternalTypes'
 export type Lanes = number
 export type Lane = number
 export type LaneMap<T> = Array<T>
-export type LaneIndex = number
+
+// 这是我自己加的类型。
+type LaneIndex = number
 
 export const TotalLanes = 31
 
@@ -11,22 +13,13 @@ export const TotalLanes = 31
 export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000
 export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000
 
-export const SyncHydrationLane: Lane = /*               */ 0b0000000000000000000000000000001
 export const SyncLane: Lane = /*                        */ 0b0000000000000000000000000000010
-export const SyncLaneIndex: number = 1
 
 export const InputContinuousHydrationLane: Lane = /*    */ 0b0000000000000000000000000000100
 export const InputContinuousLane: Lane = /*             */ 0b0000000000000000000000000001000
 
 export const DefaultHydrationLane: Lane = /*            */ 0b0000000000000000000000000010000
 export const DefaultLane: Lane = /*                     */ 0b0000000000000000000000000100000
-
-// TODO: 20260412 - 待完善
-// export const SyncUpdateLanes: Lanes | Lane = enableUnifiedSyncLane
-//   ? SyncLane | InputContinuousLane | DefaultLane
-//   : SyncLane
-export const SyncUpdateLanes: Lanes =
-  SyncLane | InputContinuousLane | DefaultLane
 
 const TransitionHydrationLane: Lane = /*                */ 0b0000000000000000000000001000000
 const TransitionLanes: Lanes = /*                       */ 0b0000000001111111111111110000000
@@ -45,61 +38,38 @@ const TransitionLane12: Lane = /*                       */ 0b0000000000001000000
 const TransitionLane13: Lane = /*                       */ 0b0000000000010000000000000000000
 const TransitionLane14: Lane = /*                       */ 0b0000000000100000000000000000000
 const TransitionLane15: Lane = /*                       */ 0b0000000001000000000000000000000
+const TransitionLane16: Lane = /*                       */ 0b0000000001000000000000000000000
 
 const RetryLanes: Lanes = /*                            */ 0b0000011110000000000000000000000
 const RetryLane1: Lane = /*                             */ 0b0000000010000000000000000000000
 const RetryLane2: Lane = /*                             */ 0b0000000100000000000000000000000
 const RetryLane3: Lane = /*                             */ 0b0000001000000000000000000000000
 const RetryLane4: Lane = /*                             */ 0b0000010000000000000000000000000
+const RetryLane5: Lane = /*                             */ 0b0000100000000000000000000000000
 
-export const SomeTransitionLane: Lane = TransitionLane1
+export const SomeRetryLane: Lane = RetryLane1
 
-export const SelectiveHydrationLane: Lane = /*          */ 0b0000100000000000000000000000000
+export const SelectiveHydrationLane: Lane = /*          */ 0b0001000000000000000000000000000
+
 const NonIdleLanes: Lanes = /*                          */ 0b0000111111111111111111111111111
 
 export const IdleHydrationLane: Lane = /*               */ 0b0001000000000000000000000000000
 export const IdleLane: Lane = /*                        */ 0b0010000000000000000000000000000
 
 export const OffscreenLane: Lane = /*                   */ 0b0100000000000000000000000000000
-export const DeferredLane: Lane = /*                    */ 0b1000000000000000000000000000000
 
-// Any lane that might schedule an update. This is used to detect infinite
-// update loops, so it doesn't include hydration lanes or retries.
-export const UpdateLanes: Lanes =
-  SyncLane | InputContinuousLane | DefaultLane | TransitionLanes
+// 一个特殊的时间戳常量，用于表示“无效”或“未设置”的时间状态。
+export const NoTimestamp = -1
 
 let nextTransitionLane: Lane = TransitionLane1
 
-// 检查 lane 是否是 TransitionLanes 中的 lane。
-export function isTransitionLane(lane: Lane): boolean {
-  return (lane & TransitionLanes) !== NoLane
-}
-
-// 检查 lanes 是否有非 Idle 的 lane。
-export function includesNonIdleWork(lanes: Lanes | Lane): boolean {
-  return (lanes & NonIdleLanes) !== NoLanes
-}
-
-// 获取 lanes 中优先级最高的 lane。
-export function getHighestPriorityLane(lanes: Lanes): Lane {
-  return lanes & -lanes
-}
-
 /**
- * 获取最高优先级的 Lanes 集合
+ * 获取最高优先级的 Lanes 集合。
  * @param lanes - 传入的 Lanes 位掩码集合
- * @returns 返回属于最高优先级区间的 Lanes（可能是单个，也可能是一组）
+ * @returns 返回属于最高优先级区间的 Lanes（可能是单个，也可能是一组。）
  */
-export function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes | Lane {
-  // 检查是否存在同步更新（常量位运算检查）
-  const pendingSyncLane = SyncLane & SyncUpdateLanes
-  if (pendingSyncLane !== 0) {
-    return pendingSyncLane
-  }
-  // 获取当前 lanes 中优先级最高的那一个 Lanes | Lane
+function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes | Lane {
   switch (getHighestPriorityLane(lanes)) {
-    case SyncHydrationLane:
-      return SyncHydrationLane
     case SyncLane:
       return SyncLane
     case InputContinuousHydrationLane:
@@ -127,11 +97,13 @@ export function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes | Lane {
     case TransitionLane13:
     case TransitionLane14:
     case TransitionLane15:
+    case TransitionLane16:
       return lanes & TransitionLanes
     case RetryLane1:
     case RetryLane2:
     case RetryLane3:
     case RetryLane4:
+    case RetryLane5:
       return lanes & RetryLanes
     case SelectiveHydrationLane:
       return SelectiveHydrationLane
@@ -141,53 +113,88 @@ export function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes | Lane {
       return IdleLane
     case OffscreenLane:
       return OffscreenLane
-    case DeferredLane:
-      return NoLanes
     default:
       // 如果遇到了一个不认识、或者没列出来的优先级，为了安全起见，直接返回 lanes。
       return lanes
   }
 }
 
-// 检查 a 和 b 是否有相同的 lane，只要有一个单独的 lane 相同，则返回 true。
-export function includesSomeLane(a: Lanes | Lane, b: Lanes): boolean {
-  return (a & b) !== NoLanes
+/**
+ * 核心职责：
+ *   1. 从所有待处理的任务中，选出下一批应该执行的任务优先级集合 (Lanes)。
+ *   2. 决定是否需要“打断”当前正在进行的渲染 (Work In Progress)。
+ *
+ * @param {FiberRoot} root - React 应用的根节点，存储着全局调度信息。
+ * @param {Lanes} wipLanes - Work In Progress Lanes，当前正在渲染的任务优先级集合。
+ * @returns {Lanes} - 决定接下来要执行的任务优先级集合。
+ */
+export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
+  // 获取根节点上所有“待处理”的任务集合。 (pendingLanes 是一个位掩码，记录了所有未完成的更新。)
+  const pendingLanes = root.pendingLanes
+  if (pendingLanes === NoLanes) {
+    // 如果没有任何待处理的任务 (二进制全为 0)，直接下班，返回空。
+    return NoLanes
+  }
+
+  // 从所有待处理任务中，提取出优先级最高的那些 Lanes。
+  let nextLanes = NoLanes
+  const nonIdlePendingLanes = pendingLanes & NonIdleLanes
+  if (nonIdlePendingLanes !== NoLanes) {
+    nextLanes = getHighestPriorityLanes(nonIdlePendingLanes)
+  } else {
+    nextLanes = getHighestPriorityLanes(pendingLanes)
+  }
+
+  if (nextLanes === NoLanes) {
+    // 再次检查，如果筛选后为空，直接返回。
+    return NoLanes
+  }
+
+  // 前提条件：
+  //   1. wipLanes !== NoLanes: 当前确实有一个渲染任务正在进行中。
+  //   2. wipLanes !== nextLanes: 新选出的任务与当前正在做的任务不一样。
+  if (wipLanes !== NoLanes && wipLanes !== nextLanes) {
+    // 提取出“新任务”中优先级最高的那一个车道 。
+    const nextLane = getHighestPriorityLane(nextLanes)
+    // 提取出“当前任务”中优先级最高的那一个车道。
+    const wipLane = getHighestPriorityLane(wipLanes)
+    // 关键判断逻辑：
+    // 满足以下任一条件，则“不打断”当前任务，继续执行 wipLanes：
+    //   条件 A: nextLane >= wipLane。
+    //     - 在 React Lanes 模型中，**数值越小，优先级越高** (如 SyncLane 是 1, DefaultLane 是 16)。
+    //     - 如果 nextLane >= wipLane，说明新任务的优先级 **低于或等于** 当前任务。
+    //   条件 B: (nextLane === DefaultLane && (wipLane & TransitionLanes) !== NoLanes)。
+    //     - 这是一个特殊的防抖动优化。
+    //     - 如果新任务是“默认优先级”，而当前正在做“过渡任务 (Transition)”。
+    //     - 虽然理论上 Default > Transition，但 React 为了保护过渡动画的流畅性，规定：普通的默认更新不要打断正在进行的过渡更新。
+    if (
+      nextLane >= wipLane ||
+      (nextLane === DefaultLane && (wipLane & TransitionLanes) !== NoLanes)
+    ) {
+      // 决策结果：维持现状。
+      //   返回 wipLanes，意味着告诉调度器：“别管新来的了，先把当前手里的活干完”。
+      //   这样可以避免频繁的重渲染和计算浪费。
+      return wipLanes
+    }
+  }
+
+  // 如果 pendingLanes 里有 DefaultLane，不管刚才选出的是 SyncLane 还是 TransitionLane，都把 DefaultLane 一起带上渲染。
+  // 原因：DefaultLane 是"常规优先级"，React 认为它不值得单独再开一轮渲染，顺手一起做效率更高。
+  nextLanes |= pendingLanes & DefaultLane
+
+  // TODO: 省略（纠缠）逻辑。
+
+  // 走到这里，说明以下两种情况之一：
+  //   1. 当前没有任务在执行 (wipLanes === NoLanes)。
+  //   2. 新任务的优先级 **严格高于** 当前任务 (例如：来了个同步更新，打断了默认的渲染)。
+  // 决策结果：插队成功。
+  //   返回 nextLanes，调度器将暂停当前工作，转而去处理这批更高优先级的任务。
+  return nextLanes
 }
 
-// 检查 set 是否包含 subset。
-export function isSubsetOfLanes(set: Lanes, subset: Lanes | Lane): boolean {
-  return (set & subset) === subset
-}
-
-// 合并两个 lane 或者 lanes。
-export function mergeLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
-  return a | b
-}
-
-// 从 set 移除 subset。例如：执行完节点的 Update 操作之后，则需要移除 fiber.flags 的 Update 状态。
-export function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes {
-  return set & ~subset
-}
-
-// 与 includesSomeLane 不同，includesSomeLane 返回的是是否有交叉，即结果是 boolean。而 intersectLanes 返回的是有交叉的 lanes。
-export function intersectLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
-  return a & b
-}
-
-// 返回优先级较高的 lane。如果 a < b，则说明 a 的优先级高于 b，因为 lane 越小，优先级越高。
-export function higherPriorityLane(a: Lane, b: Lane): Lane {
-  return a !== NoLane && a < b ? a : b
-}
-
-// 返回比特位上最右边 1 的位置下标。
-// 这个函数常用在获取一个 lanes 上优先级最高的 lane，如果这里返回值为 index，那么 1<< index 就是 lanes 中优先级最高的 lane。
-function pickArbitraryLaneIndex(lanes: Lanes): LaneIndex {
-  return 31 - Math.clz32(lanes)
-}
-
-// 返回比特位上最右边 1 的位置下标。
-function laneToIndex(lanes: Lanes): LaneIndex {
-  return pickArbitraryLaneIndex(lanes)
+// 检查 lanes 是否有非 Idle 的 lane。
+export function includesNonIdleWork(lanes: Lanes | Lane): boolean {
+  return (lanes & NonIdleLanes) !== NoLanes
 }
 
 /**
@@ -219,6 +226,11 @@ export function includesOnlyNonUrgentLanes(lanes: Lanes): boolean {
  */
 export function includesOnlyTransitions(lanes: Lanes): boolean {
   return (lanes & TransitionLanes) === lanes
+}
+
+// 检查 lane 是否是 TransitionLanes 中的 lane。
+export function isTransitionLane(lane: Lane): boolean {
+  return (lane & TransitionLanes) !== NoLane
 }
 
 /**
@@ -255,80 +267,83 @@ export function claimNextTransitionLane(): Lane {
   return lane
 }
 
-/**
- * 核心职责：
- * 1. 从所有待处理的任务中，选出下一批应该执行的任务优先级集合 (Lanes)。
- * 2. 决定是否需要“打断”当前正在进行的渲染 (Work In Progress)。
- *
- * @param {FiberRoot} root - React 应用的根节点，存储着全局调度信息
- * @param {Lanes} wipLanes - Work In Progress Lanes，当前正在渲染的任务优先级集合
- * @returns {Lanes} - 决定接下来要执行的任务优先级集合
- */
-export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
-  // 获取根节点上所有“待处理”的任务集合 (pendingLanes 是一个位掩码，记录了所有未完成的更新)
-  const pendingLanes = root.pendingLanes
-  if (pendingLanes === NoLanes) {
-    // 如果没有任何待处理的任务 (二进制全为 0)，直接下班，返回空
-    return NoLanes
-  }
-  // 从所有待处理任务中，提取出优先级最高的那些 Lanes。
-  // 注意：这里简化了逻辑，实际源码会先排除掉 Suspended (挂起) 和 Idle (空闲) 的任务。
-  const nextLanes = getHighestPriorityLanes(pendingLanes)
-  if (nextLanes === NoLane) {
-    // 再次检查，如果筛选后为空，直接返回
-    return NoLanes
-  }
-  // --- 核心决策 —— 是否打断当前任务？ ---
-  // 前提条件：
-  // 1. wipLanes !== NoLanes: 当前确实有一个渲染任务正在进行中。
-  // 2. wipLanes !== nextLanes: 新选出的任务与当前正在做的任务不一样。
-  //    (如果一样，说明是同一批任务，直接继续执行即可，无需判断打断)
-  if (wipLanes !== NoLanes && wipLanes !== nextLanes) {
-    // 提取出“新任务”中优先级最高的那一个车道 (数值最小)
-    const nextLane = getHighestPriorityLane(nextLanes)
-    // 提取出“当前任务”中优先级最高的那一个车道
-    const wipLane = getHighestPriorityLane(wipLanes)
-    // 【关键判断逻辑】
-    // 满足以下任一条件，则【不打断】当前任务，继续执行 wipLanes：
-    // 条件 A: nextLane >= wipLane
-    //   - 在 React Lanes 模型中，**数值越小，优先级越高** (如 SyncLane 是 1, DefaultLane 是 16)。
-    //   - 如果 nextLane >= wipLane，说明新任务的优先级 **低于或等于** 当前任务。
-    //   - 例子：正在做优先级 4 的事，来了个优先级 8 的事 -> 插队失败，继续做优先级 4 的事。
-    // 条件 B: (nextLane === DefaultLane && (wipLane & TransitionLanes) !== NoLanes)
-    //   - 这是一个特殊的防抖动优化。
-    //   - 如果新任务是“默认优先级”，而当前正在做“过渡任务 (Transition)”。
-    //   - 虽然理论上 Default > Transition，但 React 为了保护过渡动画的流畅性，
-    //     规定：普通的默认更新不要打断正在进行的过渡更新。
-    if (
-      nextLane >= wipLane ||
-      (nextLane === DefaultLane && (wipLane & TransitionLanes) !== NoLanes)
-    ) {
-      // 【决策结果：维持现状】
-      // 返回 wipLanes，意味着告诉调度器：“别管新来的了，先把当前手里的活干完”。
-      // 这样可以避免频繁的重渲染和计算浪费。
-      return wipLanes
-    }
-  }
-  // 走到这里，说明以下两种情况之一：
-  // 1. 当前没有任务在执行 (wipLanes === NoLanes)。
-  // 2. 新任务的优先级 **严格高于** 当前任务 (例如：来了个同步更新，打断了默认的渲染)。
-  // 【决策结果：插队成功】
-  // 返回 nextLanes，调度器将暂停当前工作，转而去处理这批更高优先级的任务。
-  return nextLanes
+// 获取 lanes 中优先级最高的 lane。
+export function getHighestPriorityLane(lanes: Lanes): Lane {
+  return lanes & -lanes
 }
 
-// 一个特殊的时间戳常量，用于表示“无效”或“未设置”的时间状态。
-export const NoTimestamp = -1
+/**
+ * 从车道集合中选择一个任意的车道
+ *
+ * 作用：
+ * - 从多个车道中选择一个车道
+ * - 选择最高优先级的车道
+ *
+ * 为什么选择最高优先级？
+ * - 因为高优先级的更新应该先处理
+ * - 防止低优先级的更新阻塞高优先级的更新
+ *
+ * @param lanes - 车道集合（位掩码）
+ * @returns 选择的车道（单个车道）
+ */
+export function pickArbitraryLane(lanes: Lanes): Lane {
+  return getHighestPriorityLane(lanes)
+}
+
+// 返回比特位上最右边 1 的位置下标。
+// 这个函数常用在获取一个 lanes 上优先级最高的 lane，如果这里返回值为 index，那么 1<< index 就是 lanes 中优先级最高的 lane。
+function pickArbitraryLaneIndex(lanes: Lanes): LaneIndex {
+  return 31 - Math.clz32(lanes)
+}
+
+// 返回比特位上最右边 1 的位置下标。
+function laneToIndex(lanes: Lanes): LaneIndex {
+  return pickArbitraryLaneIndex(lanes)
+}
+
+// 检查 a 和 b 是否有相同的 lane，只要有一个单独的 lane 相同，则返回 true。
+export function includesSomeLane(a: Lanes | Lane, b: Lanes | Lane): boolean {
+  return (a & b) !== NoLanes
+}
+
+// 检查 set 是否包含 subset。
+export function isSubsetOfLanes(set: Lanes, subset: Lanes | Lane): boolean {
+  return (set & subset) === subset
+}
+
+// 合并两个 lane 或者 lanes。
+export function mergeLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
+  return a | b
+}
+
+// 从 set 移除 subset。例如：执行完节点的 Update 操作之后，则需要移除 fiber.flags 的 Update 状态。
+export function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes {
+  return set & ~subset
+}
+
+// 与 includesSomeLane 不同，includesSomeLane 返回的是是否有交叉，即结果是 boolean。而 intersectLanes 返回的是有交叉的 lanes。
+export function intersectLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
+  return a & b
+}
+
+// 返回优先级较高的 lane。如果 a < b，则说明 a 的优先级高于 b，因为 lane 越小，优先级越高。
+export function higherPriorityLane(a: Lane, b: Lane): Lane {
+  return a !== NoLane && a < b ? a : b
+}
 
 /**
- * 将指定的更新优先级（Lane）标记到根节点上。
- * 通过合并操作，把新的 lane 添加到根节点的待处理任务队列（pendingLanes）中。
+ * 将指定的更新优先级标记到根节点上。
+ * 通过合并操作，把新的 updateLane 添加到根节点的待处理任务队列（pendingLanes）中。
  *
  * @param root - 应用的 Fiber 根节点
- * @param lane - 需要标记的新更新优先级（Lane）
+ * @param updateLane - 需要标记的新更新优先级（Lane）
  */
-export function markRootUpdated(root: FiberRoot, lane: Lane): void {
-  root.pendingLanes = mergeLanes(root.pendingLanes, lane)
+export function markRootUpdated(
+  root: FiberRoot,
+  updateLane: Lane,
+  eventTime: number
+): void {
+  root.pendingLanes |= updateLane
 }
 
 /**
@@ -359,22 +374,4 @@ export function markRootFinished(root: FiberRoot, remainingLanes: Lanes): void {
     // 从待清理的 lanes 掩码中移除当前已处理的这一个 lane，推进循环。
     lanes &= ~lane
   }
-}
-
-/**
- * 从车道集合中选择一个任意的车道
- *
- * 作用：
- * - 从多个车道中选择一个车道
- * - 选择最高优先级的车道
- *
- * 为什么选择最高优先级？
- * - 因为高优先级的更新应该先处理
- * - 防止低优先级的更新阻塞高优先级的更新
- *
- * @param lanes - 车道集合（位掩码）
- * @returns 选择的车道（单个车道）
- */
-export function pickArbitraryLane(lanes: Lanes): Lane {
-  return getHighestPriorityLane(lanes)
 }
