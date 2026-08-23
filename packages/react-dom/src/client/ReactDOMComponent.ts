@@ -5,6 +5,11 @@ import isCustomComponent from '../shared/isCustomComponent'
 import { setValueForStyles } from './CSSPropertyOperations'
 import setTextContent from './setTextContent'
 import { setValueForProperty } from './DOMPropertyOperations'
+import {
+  initWrapperState as ReactDOMTextareaInitWrapperState,
+  getHostProps as ReactDOMTextareaGetHostProps,
+  postMountWrapper as ReactDOMTextareaPostMountWrapper,
+} from './ReactDOMTextarea'
 
 const DANGEROUSLY_SET_INNER_HTML = 'dangerouslySetInnerHTML'
 const SUPPRESS_CONTENT_EDITABLE_WARNING = 'suppressContentEditableWarning'
@@ -260,6 +265,15 @@ export function setInitialProperties(
   let props: Object
   switch (tag) {
     // TODO: 待实现。
+    case 'textarea':
+      ReactDOMTextareaInitWrapperState(domElement, rawProps)
+      // React 源码不是直接设 textContent，而是通过 getHostProps 转换 props 来实现的。
+      // 这样 setInitialDOMProperties 处理时：
+      //   value 是 undefined → 不会设 value 属性。
+      //   children 有值 → 走 setTextContent(domElement, children) → textarea 显示内容。
+      props = ReactDOMTextareaGetHostProps(domElement, rawProps)
+      // 待实现。
+      break
     default:
       props = rawProps
   }
@@ -282,6 +296,22 @@ export function setInitialProperties(
   // 必须在 setInitialDOMProperties 之后执行。
   // 因为 input 需要先设置 type，再设置 value（顺序影响浏览器行为）。
   switch (tag) {
+    case 'input':
+      // 待实现。
+      break
+    case 'textarea':
+      // 待实现。
+      ReactDOMTextareaPostMountWrapper(domElement, rawProps)
+      break
+    case 'option':
+      // 待实现。
+      break
+    case 'select':
+      // 待实现。
+      break
+    default:
+      // 待实现。
+      break
   }
 }
 

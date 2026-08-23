@@ -395,9 +395,8 @@ function mountState<S>(
     lastRenderedState: initialState,
   }
   hook.queue = queue
-  const dispatch: Dispatch<BasicStateAction<S>> = (queue.dispatch = (
-    action: BasicStateAction<S>
-  ) => dispatchSetState(currentlyRenderingFiber!, queue, action))
+  const dispatch: Dispatch<BasicStateAction<S>> = (queue.dispatch =
+    dispatchSetState.bind(null, currentlyRenderingFiber!, queue as any))
   return [hook.memoizedState, dispatch]
 }
 
@@ -478,8 +477,11 @@ function mountReducer<S, I, A>(
     lastRenderedState: initialState,
   }
   hook.queue = queue
-  const dispatch: Dispatch<A> = (queue.dispatch = (action: A) =>
-    dispatchReducerAction(currentlyRenderingFiber!, queue, action))
+  const dispatch: Dispatch<A> = (queue.dispatch = dispatchReducerAction.bind(
+    null,
+    currentlyRenderingFiber!,
+    queue as any
+  ))
   return [hook.memoizedState, dispatch]
 }
 
