@@ -3,7 +3,7 @@
     "moduleResolution": "bundler",
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
-    "outDir": "../dist/examples",
+    "outDir": "./dist",
     "paths": {
       "@src/*": ["src/*"]
     },
