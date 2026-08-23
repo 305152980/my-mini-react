@@ -18,6 +18,7 @@ const packageJson = {
 
     // TypeScript：
     typescript: '^5.9.3', // TypeScript 编译器核心，负责将 TS 代码编译为 JS 并进行静态类型检查。
+    "@types/node": "26.2.0", // 提供 Node.js 内置模块（path、fs、http 等）和全局变量（__dirname、process 等）的 TypeScript 类型声明，让 TypeScript 能识别和检查 Node.js API。
 
     // 测试：
     vitest: '4.1.5',

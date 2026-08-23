@@ -1,13 +1,15 @@
 {
-  "extends": "../tsconfig.json", // 继承根目录TS配置，保持一致的编译选项和路径映射
   "compilerOptions": {
-    "outDir": "./dist", // 后续打包输出目录（保持与根目录一致，方便构建工具识别）
-    // "declaration": true, // 生成类型声明文件（.d.ts），关键：供其他包识别类型，尤其在 monorepo 内部依赖时非常重要
-    "baseUrl": ".", // 解析非相对模块的基础路径，保持与根目录一致，适配 monorepo 内部结构
+    "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "outDir": "../dist/examples",
     "paths": {
-      "@src/*": ["src/*"] // 解析 @src 别名到当前包的 src 目录，保持与根目录一致，适配 monorepo 内部结构
-    }
+      "@src/*": ["src/*"]
+    },
+    "jsx": "react-jsx", // 使用自动 JSX 运行时（React 17+ 的转换方式）。
+    // "jsxImportSource": "@my-mini-react/react", // JSX 转换时从你的 mini-react 导入 jsx/jsxs，而不是从官方 react。
   },
-  "include": ["./**/*"], // 包含当前包下所有文件（TS/JS/Vue等），确保类型检查覆盖整个包的源码
-  "exclude": ["node_modules", "dist"] // 排除依赖和构建产物，避免不必要的类型检查和编译输出
+  "include": ["./**/*"],
+  "exclude": ["node_modules"],
 }
