@@ -1,0 +1,34 @@
+{
+  "name": "examples",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@my-mini-react/react": "1.0.0",
+    "@my-mini-react/react-dom": "1.0.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "5.1.4",
+    "vite": "7.3.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@my-mini-react/react": "file:../dist/node_modules/@my-mini-react/react",
+      "@my-mini-react/react-dom": "file:../dist/node_modules/@my-mini-react/react-dom",
+      "@my-mini-react/scheduler": "file:../dist/node_modules/@my-mini-react/scheduler"
+    }
+  }
+}

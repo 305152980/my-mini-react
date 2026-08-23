@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "paths": {
+      "@src/*": ["src/*"]
+    },
+    "jsx": "react-jsx", // 使用自动 JSX 运行时（React 17+ 的转换方式）。
+    // "jsxImportSource": "@my-mini-react/react", // JSX 转换时从你的 mini-react 导入 jsx/jsxs，而不是从官方 react。
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules"],
+}

@@ -7,6 +7,7 @@ packages:
   - '!**/lib'
   - '!**/coverage'
   - '!packages/**/__tests__'
+  - '!project/**'
 
 onlyBuiltDependencies:
   - esbuild
