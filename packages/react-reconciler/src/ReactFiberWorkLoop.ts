@@ -1092,3 +1092,20 @@ export function markSkippedUpdateLanes(lane: Lane | Lanes): void {
     workInProgressRootSkippedLanes
   )
 }
+
+/**
+ * 获取当前正在渲染的 root 的渲染优先级（lanes）。
+ *
+ * workInProgressRootRenderLanes 在 performConcurrentWorkOnRoot / performSyncWorkOnRoot
+ * 开始渲染时被设置，表示本次渲染要处理的所有优先级。
+ *
+ * 用途：
+ *   在 updateReducer 处理 update 队列时，用来判断每个 update 的优先级是否足够被本次渲染处理。
+ *   不够的 update 会被跳过，保存到下次渲染。
+ *
+ * 为什么需要单独导出而不是直接访问变量：
+ *   该变量是模块内部的私有状态，只有 WorkLoop 模块能修改，其他模块（如 ReactFiberHooks）通过此函数只读访问。
+ */
+export function getWorkInProgressRootRenderLanes(): Lanes {
+  return workInProgressRootRenderLanes
+}

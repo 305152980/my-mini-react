@@ -1,5 +1,13 @@
 import ReactSharedInternals from '@my-mini-react/shared/ReactSharedInternals'
-import { type Lane, type Lanes, NoLanes, removeLanes } from './ReactFiberLane'
+import {
+  type Lane,
+  type Lanes,
+  NoLane,
+  NoLanes,
+  removeLanes,
+  isSubsetOfLanes,
+  mergeLanes,
+} from './ReactFiberLane'
 import {
   type Flags,
   Passive as PassiveEffect,
@@ -15,6 +23,15 @@ import {
 } from './ReactHookEffectTags'
 import { type Fiber, type Dispatcher } from './ReactInternalTypes'
 import is from '@my-mini-react/shared/objectIs'
+import {
+  requestUpdateLane,
+  requestEventTime,
+  scheduleUpdateOnFiber,
+  getWorkInProgressRootRenderLanes,
+  markSkippedUpdateLanes,
+} from './ReactFiberWorkLoop'
+import { enqueueConcurrentHookUpdate } from './ReactFiberConcurrentUpdates'
+import { markWorkInProgressReceivedUpdate } from './ReactFiberBeginWork'
 
 const { ReactCurrentDispatcher } = ReactSharedInternals
 
@@ -286,6 +303,187 @@ function mountRef<T>(initialValue: T): { current: T } {
 }
 
 /**
+ * 基础 state reducer。
+ *
+ * 用于 useState 的内部 reducer。
+ * 如果 action 是函数，则调用它并传入当前 state（支持函数式更新）；
+ * 如果 action 是普通值，则直接返回。
+ *
+ * 例如：
+ *   setState(10)                 → action = 10     → 返回 10
+ *   setState(prev => prev + 1)   → action = 函数   → 调用函数，返回 prev + 1
+ */
+function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
+  return typeof action === 'function'
+    ? (action as (state: S) => S)(state)
+    : action
+}
+
+/**
+ * dispatchSetState —— useState 返回的 setState 函数的底层实现。
+ *
+ * 调用时机：用户调用 setState(xxx) 时触发。
+ *
+ * 执行流程：
+ *   1. 请求本次更新的优先级（lane）。
+ *   2. 创建 update 对象，包含 action、lane、eagerState 等。
+ *   3. 将 update 入队（通过 enqueueConcurrentHookUpdate）。
+ *      - 入队到临时数组，不直接修改环形链表（保证并发安全）。
+ *      - 返回 FiberRoot，如果返回 null 说明不需要调度。
+ *   4. 如果有 root，调度一次 Fiber 更新（scheduleUpdateOnFiber）。
+ *
+ * 参数：
+ *   fiber  - 当前组件对应的 Fiber 节点
+ *   queue  - 该 hook 的更新队列
+ *   action - 用户传入的新值或更新函数
+ */
+function dispatchSetState<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A
+): void {
+  const lane = requestUpdateLane(fiber)
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  }
+
+  // TODO: 这里省略 eagerState 策略。
+
+  const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane)
+  if (root !== null) {
+    const eventTime = requestEventTime()
+    scheduleUpdateOnFiber(root, fiber, lane, eventTime)
+  }
+}
+
+/**
+ * mountState —— useState 在首次渲染（mount）时的实现。
+ *
+ * 调用时机：mount 阶段，Hooks 链表尚未建立，逐个处理 hooks 时调用。
+ *
+ * 执行流程：
+ *   1. 创建一个新的 hook 对象，追加到当前 Fiber 的 hooks 链表尾部。
+ *   2. 处理 initialState：如果是函数则调用它（惰性初始化）。
+ *   3. 将初始 state 存入 hook.memoizedState 和 hook.baseState。
+ *   4. 创建该 hook 的 updateQueue（环形链表，初始为空）。
+ *   5. 创建 dispatch 函数（用户调用的 setState），绑定到 queue.dispatch。
+ *   6. 返回 [当前 state, dispatch]。
+ *
+ * 关键数据结构：
+ *   hook.memoizedState  - 当前 state 值（渲染时使用）
+ *   hook.baseState      - 基础 state（处理 update 的起点）
+ *   hook.queue          - 更新队列（存储待处理的 update）
+ *   queue.dispatch      - setState 函数（用户调用触发更新）
+ */
+function mountState<S>(
+  initialState: (() => S) | S
+): [S, Dispatch<BasicStateAction<S>>] {
+  const hook = mountWorkInProgressHook()
+  if (typeof initialState === 'function') {
+    initialState = (initialState as () => S)()
+  }
+  hook.memoizedState = hook.baseState = initialState
+  const queue: UpdateQueue<S, BasicStateAction<S>> = {
+    pending: null,
+    lanes: NoLanes,
+    dispatch: null,
+    lastRenderedReducer: basicStateReducer,
+    lastRenderedState: initialState,
+  }
+  hook.queue = queue
+  const dispatch: Dispatch<BasicStateAction<S>> = (queue.dispatch = (
+    action: BasicStateAction<S>
+  ) => dispatchSetState(currentlyRenderingFiber!, queue, action))
+  return [hook.memoizedState, dispatch]
+}
+
+/**
+ * dispatchReducerAction —— useReducer 返回的 dispatch 函数的底层实现。
+ *
+ * 与 dispatchSetState 逻辑几乎一致，区别在于：
+ *   - dispatchSetState 使用 basicStateReducer（内置 reducer）。
+ *   - dispatchReducerAction 使用用户自定义的 reducer。
+ *
+ * 执行流程：
+ *   1. 计算本次更新的优先级（lane）。
+ *   2. 创建 update 对象，action 为用户传入的动作描述。
+ *   3. 将 update 入队（并发安全）。
+ *   4. 如果有 root，调度一次 Fiber 更新。
+ */
+function dispatchReducerAction<S, A>(
+  fiber: Fiber,
+  queue: UpdateQueue<S, A>,
+  action: A
+): void {
+  const lane = requestUpdateLane(fiber)
+  const update: Update<S, A> = {
+    lane,
+    action,
+    hasEagerState: false,
+    eagerState: null,
+    next: null as any,
+  }
+
+  const root = enqueueConcurrentHookUpdate(fiber, queue, update, lane)
+  if (root !== null) {
+    const eventTime = requestEventTime()
+    scheduleUpdateOnFiber(root, fiber, lane, eventTime)
+  }
+}
+
+/**
+ * mountReducer —— useReducer 在首次渲染（mount）时的实现。
+ *
+ * 调用时机：mount 阶段，处理 useReducer 对应的 hook 时调用。
+ *
+ * 参数：
+ *   reducer    - 用户定义的 reducer 函数 (state, action) => newState
+ *   initialArg - 初始 state 或初始参数
+ *   init       - 可选的惰性初始化函数，接收 initialArg 返回初始 state
+ *
+ * 执行流程：
+ *   1. 创建新 hook，追加到 hooks 链表。
+ *   2. 计算初始 state：有 init 则调用 init(initialArg)，否则 initialArg 本身就是初始 state。
+ *   3. 将初始 state 存入 hook.memoizedState 和 hook.baseState。
+ *   4. 创建 updateQueue，lastRenderedReducer 保存用户自定义的 reducer。
+ *   5. 创建 dispatch 函数，绑定到 queue.dispatch。
+ *   6. 返回 [state, dispatch]。
+ *
+ * 与 mountState 的区别：
+ *   - mountState 用 basicStateReducer（内置 reducer，直接返回 action 或调用 action 函数）。
+ *   - mountReducer 用用户自定义的 reducer（如 (state, action) => { switch(action.type) ... }）。
+ */
+function mountReducer<S, I, A>(
+  reducer: (state: S, action: A) => S,
+  initialArg: I,
+  init?: (arg: I) => S
+): [S, Dispatch<A>] {
+  const hook = mountWorkInProgressHook()
+  let initialState: S
+  if (init !== undefined) {
+    initialState = init(initialArg)
+  } else {
+    initialState = initialArg as unknown as S
+  }
+  hook.memoizedState = hook.baseState = initialState
+  const queue: UpdateQueue<S, A> = {
+    pending: null,
+    lanes: NoLanes,
+    dispatch: null,
+    lastRenderedReducer: reducer,
+    lastRenderedState: initialState,
+  }
+  hook.queue = queue
+  const dispatch: Dispatch<A> = (queue.dispatch = (action: A) =>
+    dispatchReducerAction(currentlyRenderingFiber!, queue, action))
+  return [hook.memoizedState, dispatch]
+}
+
+/**
  * 创建函数组件的 updateQueue。
  *
  * 调用时机：pushEffect 中，queue 不存在时调用。
@@ -515,6 +713,159 @@ function updateMemo<T>(nextCreate: () => T, deps: Array<any> | void | null): T {
 function updateRef<T>(initialValue: T): { current: T } {
   const hook = updateWorkInProgressHook()
   return hook.memoizedState
+}
+
+function updateState<S>(
+  initialState: (() => S) | S
+): [S, Dispatch<BasicStateAction<S>>] {
+  return updateReducer(basicStateReducer, initialState as any)
+}
+
+/**
+ * updateReducer —— useReducer / useState 在更新阶段的实现。
+ *
+ * 调用时机：组件重新渲染时，处理 useReducer / useState 对应的 hook。
+ *
+ * 整体流程：
+ *   1. 获取当前 hook 和它的 updateQueue。
+ *   2. 合并 baseQueue（上次跳过的旧 update）和 pendingQueue（新的 update）。
+ *   3. 遍历所有 update，按优先级处理或跳过。
+ *   4. 比较新旧 state，决定是否标记更新。
+ *   5. 更新 hook 的 memoizedState、baseState、baseQueue。
+ *   6. 返回 [state, dispatch]。
+ */
+function updateReducer<S, I, A>(
+  reducer: (state: S, action: A) => S,
+  initialArg: I,
+  init?: (arg: I) => S
+): [S, Dispatch<A>] {
+  const hook = updateWorkInProgressHook()
+  const queue = hook.queue
+
+  // 因为 queue 在 mount 阶段一定会被创建。如果 update 阶段发现 queue 为 null，说明 React 内部出了问题。
+  if (queue === null) {
+    throw new Error(
+      'Should have a queue. This is likely a bug in React. Please file an issue.'
+    )
+  }
+
+  // 更新 reducer 引用（用户可能在每次渲染时传入不同的 reducer）。
+  queue.lastRenderedReducer = reducer
+
+  const current = currentHook!
+
+  // ─── 第一步：合并队列。旧队列在前，新队列在后。 ───
+  let baseQueue = current.baseQueue
+  const pendingQueue = queue.pending
+  if (pendingQueue !== null) {
+    if (baseQueue !== null) {
+      const baseFirst = baseQueue.next
+      const pendingFirst = pendingQueue.next
+      baseQueue.next = pendingFirst
+      pendingQueue.next = baseFirst
+    }
+    // queue.pending 是"一次性消费"的——读了就清空。清空后必须把数据存到别处（current.baseQueue），否则中断后就找不回来了。
+    current.baseQueue = baseQueue = pendingQueue
+    // 清空 pending，所有 update 已转移到 baseQueue。
+    queue.pending = null
+  }
+
+  // ─── 第二步：处理 update 队列。 ───
+  if (baseQueue !== null) {
+    const first = baseQueue.next
+    let newState = current.baseState
+
+    let newBaseState = null
+    let newBaseQueueFirst: Update<S, A> | null = null
+    let newBaseQueueLast: Update<S, A> | null = null
+    let update = first
+    do {
+      // 判断当前 update 的优先级是否足够，不够就跳过。
+      //   isSubsetOfLanes: 检查 getWorkInProgressRootRenderLanes() 是否包含 update.lane。
+      //   getWorkInProgressRootRenderLanes: 获取当前正在渲染的 root 的渲染优先级（lanes）。
+      const shouldSkipUpdate = !isSubsetOfLanes(
+        getWorkInProgressRootRenderLanes(),
+        update.lane
+      )
+
+      if (shouldSkipUpdate) {
+        const clone: Update<S, A> = {
+          lane: update.lane,
+          action: update.action,
+          hasEagerState: update.hasEagerState,
+          eagerState: update.eagerState,
+          next: null as any,
+        }
+        if (newBaseQueueLast === null) {
+          newBaseQueueFirst = newBaseQueueLast = clone
+          // 定格 baseState：下次渲染从这个 state 开始重新计算。
+          newBaseState = newState
+        } else {
+          newBaseQueueLast.next = clone
+          newBaseQueueLast = clone
+        }
+        // 将被跳过的 lane 累加到 fiber.lanes，确保下次会调度对应优先级。
+        currentlyRenderingFiber!.lanes = mergeLanes(
+          currentlyRenderingFiber!.lanes,
+          update.lane
+        )
+        // 将被跳过的 update.lane 标记到 workInProgressRootSkippedLanes。
+        markSkippedUpdateLanes(update.lane)
+      } else {
+        // 前面有被跳过的 update，当前 update 需要克隆一份（lane = NoLane）放入 baseQueue。
+        // NoLane（0）是所有 lanes 的子集 → 下次一定不会被跳过。
+        // 这保证了：一旦有 update 被跳过，后续 update 的副本下次一定执行。
+        if (newBaseQueueLast !== null) {
+          const clone: Update<S, A> = {
+            lane: NoLane,
+            action: update.action,
+            hasEagerState: update.hasEagerState,
+            eagerState: update.eagerState,
+            next: null as any,
+          }
+          newBaseQueueLast.next = clone
+          newBaseQueueLast = clone
+        } else {
+          if (update.hasEagerState) {
+            // eagerState 策略：入队时已经预计算了结果，直接用。
+            newState = update.eagerState
+          } else {
+            // 正常路径：用 reducer 计算新 state。
+            const action = update.action
+            newState = reducer(newState, action)
+          }
+        }
+      }
+      update = update.next
+    } while (update !== null && update !== first)
+
+    if (newBaseQueueLast === null) {
+      // 没有 update 被跳过，baseState 就是最终 state。
+      newBaseState = newState
+    } else {
+      // 有 update 被跳过，将 baseQueue 闭合成环形链表。
+      newBaseQueueLast.next = newBaseQueueFirst!
+    }
+
+    // 比较新旧 state，如果变了则标记组件需要继续渲染（不 bailout）。
+    if (!is(newState, hook.memoizedState)) {
+      markWorkInProgressReceivedUpdate()
+    }
+
+    // 更新 hook 的属性。
+    hook.memoizedState = newState // 当前 state。
+    hook.baseState = newBaseState // 下次渲染的起始 state。
+    hook.baseQueue = newBaseQueueLast // 下次继承的未处理 update（尾指针）。
+
+    // 记录本次最后渲染的 state（用于 eagerState 优化）。
+    queue.lastRenderedState = newState
+  } else {
+    // 没有 update 需要处理，清空队列的 lanes。
+    queue.lanes = NoLanes
+  }
+
+  const dispatch: Dispatch<A> = queue.dispatch
+  return [hook.memoizedState, dispatch]
 }
 
 /**

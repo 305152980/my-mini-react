@@ -25,6 +25,7 @@ export function updateContainer(
   const update = createUpdate(eventTime, lane)
   update.payload = { element }
 
+  // HostRoot Fiber 的 updateQueue 就是类组件那种结构（SharedQueue / 环形链表），所以直接用 ReactFiberClassUpdateQueue 中的 enqueueUpdate 来入队。
   const root = enqueueUpdate(current, update, lane)
   if (root !== null) {
     scheduleUpdateOnFiber(root, current, lane, eventTime)

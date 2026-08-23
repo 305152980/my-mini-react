@@ -11,6 +11,10 @@ import {
   type SharedQueue as ClassQueue,
   type Update as ClassUpdate,
 } from './ReactFiberClassUpdateQueue'
+import type {
+  UpdateQueue as HookQueue,
+  Update as HookUpdate,
+} from './ReactFiberHooks'
 
 export type ConcurrentUpdate = {
   next: ConcurrentUpdate
@@ -59,6 +63,18 @@ function markUpdateLaneFromFiberToRoot(
   }
 }
 
+export function enqueueConcurrentHookUpdate<S, A>(
+  fiber: Fiber,
+  queue: HookQueue<S, A>,
+  update: HookUpdate<S, A>,
+  lane: Lane
+): FiberRoot | null {
+  const concurrentQueue: ConcurrentQueue = queue as any
+  const concurrentUpdate: ConcurrentUpdate = update as any
+  enqueueUpdate(fiber, concurrentQueue, concurrentUpdate, lane)
+  return getRootForUpdatedFiber(fiber)
+}
+
 export function enqueueConcurrentClassUpdate<State>(
   fiber: Fiber,
   queue: ClassQueue<State>,
@@ -76,7 +92,7 @@ function enqueueUpdate(
   queue: ConcurrentQueue | null,
   update: ConcurrentUpdate | null,
   lane: Lane
-) {
+): void {
   concurrentQueues[concurrentQueuesIndex++] = fiber
   concurrentQueues[concurrentQueuesIndex++] = queue
   concurrentQueues[concurrentQueuesIndex++] = update
