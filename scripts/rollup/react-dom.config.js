@@ -58,11 +58,11 @@ export default [
               default: './umd/client.js',
             },
           },
-          peerDependencies: {
-            '@my-mini-react/react': packageJSONObject.version,
-          },
           dependencies: {
             '@my-mini-react/scheduler': packageJSONObject.version,
+          },
+          peerDependencies: {
+            '@my-mini-react/react': packageJSONObject.version,
           },
         }),
       }),
