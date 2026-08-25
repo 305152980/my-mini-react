@@ -4,6 +4,8 @@ import {
   getBaseRollupPlugins,
 } from './utils.js '
 import generatePackageJson from 'rollup-plugin-generate-package-json'
+import alias from '@rollup/plugin-alias'
+import dts from 'rollup-plugin-dts'
 
 const { exports } = getPackageJSONDev('react')
 const { packagePathDev, packagePathBuild } = resolvePackagePath('react')
@@ -37,6 +39,7 @@ export default [
           publishConfig: packageJSONObject.publishConfig,
           exports: {
             '.': {
+              types: './esm/index.d.ts',
               import: './esm/index.js',
               require: './cjs/index.js',
               umd: './umd/index.js',
@@ -67,5 +70,21 @@ export default [
     },
     external: [],
     plugins: getBaseRollupPlugins(),
+  },
+  {
+    input: `${packagePathDev}/${exports['.']['import']}`,
+    output: {
+      file: `${packagePathBuild}/esm/index.d.ts`,
+      format: 'esm',
+    },
+    plugins: [
+      alias({
+        entries: {
+          '@my-mini-react/react-reconciler': `${resolvePackagePath('react-reconciler').packagePathDev}/index.ts`,
+          '@my-mini-react/shared': `${resolvePackagePath('shared').packagePathDev}`,
+        },
+      }),
+      dts({ tsconfig: `${packagePathDev}/tsconfig.json` }),
+    ],
   },
 ]

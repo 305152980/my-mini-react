@@ -5,6 +5,7 @@ import {
 } from './utils.js'
 import generatePackageJson from 'rollup-plugin-generate-package-json'
 import alias from '@rollup/plugin-alias'
+import dts from 'rollup-plugin-dts'
 
 const { exports } = getPackageJSONDev('react-dom')
 const { packagePathDev, packagePathBuild } = resolvePackagePath('react-dom')
@@ -46,12 +47,14 @@ export default [
           publishConfig: packageJSONObject.publishConfig,
           exports: {
             '.': {
+              types: './esm/index.d.ts',
               import: './esm/index.js',
               require: './cjs/index.js',
               umd: './umd/index.js',
               default: './umd/index.js',
             },
             './client': {
+              types: './esm/client.d.ts',
               import: './esm/client.js',
               require: './cjs/client.js',
               umd: './umd/client.js',
@@ -161,6 +164,40 @@ export default [
           ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
         },
       }),
+    ],
+  },
+  {
+    input: `${packagePathDev}/${exports['.']['import']}`,
+    output: {
+      file: `${packagePathBuild}/esm/index.d.ts`,
+      format: 'esm',
+    },
+    plugins: [
+      alias({
+        entries: {
+          '@my-mini-react/shared': `${resolvePackagePath('shared').packagePathDev}`,
+          '@my-mini-react/react-reconciler': `${resolvePackagePath('react-reconciler').packagePathDev}/index.ts`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
+        },
+      }),
+      dts({ tsconfig: `${packagePathDev}/tsconfig.json` }),
+    ],
+  },
+  {
+    input: `${packagePathDev}/${exports['./client']['import']}`,
+    output: {
+      file: `${packagePathBuild}/esm/client.d.ts`,
+      format: 'esm',
+    },
+    plugins: [
+      alias({
+        entries: {
+          '@my-mini-react/shared': `${resolvePackagePath('shared').packagePathDev}`,
+          '@my-mini-react/react-reconciler': `${resolvePackagePath('react-reconciler').packagePathDev}/index.ts`,
+          ReactFiberHostConfig: `${packagePathDev}/src/client/ReactDOMHostConfig.ts`,
+        },
+      }),
+      dts({ tsconfig: `${packagePathDev}/tsconfig.json` }),
     ],
   },
 ]

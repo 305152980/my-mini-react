@@ -1,39 +1,8 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "skipLibCheck": true, 
-
     "rootDir": ".",
     "outDir": "../../dist/node_modules/@my-mini-react/shared",
     "paths": {},
-
-    "target": "esnext",
-    // "module": "preserve" 时，默认启用：
-    //    moduleResolution: "bundler"
-    //    esModuleInterop: true
-    "module": "preserve", 
-    "moduleResolution": "bundler",
-    "verbatimModuleSyntax": true,
-    "esModuleInterop": true,
-
-    "emitDeclarationOnly": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": false,
-
-    "lib": ["esnext", "dom"],
-
-    "allowJs": false,
-
-    // 通过索引（如 arr[0] 或 obj['key']）访问数组或对象的属性时，TypeScript 会自动在返回值类型中追加一个 | undefined。
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-
-    "isolatedModules": true,
   },
   "include": ["__tests__", "*.ts"],
   "exclude": ["node_modules"],

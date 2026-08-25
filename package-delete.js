@@ -32,7 +32,11 @@ const packageJson = {
     '@rollup/plugin-commonjs': '29.0.3', // 将 node_modules 中的 CommonJS 模块转换为 ESM 模块。
     '@rollup/plugin-node-resolve': '16.0.3', // 让 Rollup 能解析 node_modules 中的模块。没有它，Rollup 只能解析相对路径（./foo）和绝对路径，不能解析裸模块名。
     'rollup-plugin-esbuild': '6.2.1', // 用 esbuild 将 TypeScript 转换为 JavaScript（剥离类型，不做类型检查）。
+    "rollup-plugin-dts": "6.5.1", // 用于将项目中分散的 .d.ts TypeScript 类型定义文件打包合并成一个单独的类型声明文件。
   },
 }
 
 export { packageJson }
+
+// rollup-plugin-esbuild：默认不读取任何 tsconfig，用 esbuild 自己的默认配置转译 TypeScript（不做类型检查）。
+// rollup-plugin-dts：默认从当前工作目录向上查找最近的 tsconfig.json，也就是会用到根目录的 tsconfig.json。

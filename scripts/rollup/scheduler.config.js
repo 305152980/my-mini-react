@@ -4,6 +4,7 @@ import {
   getBaseRollupPlugins,
 } from './utils.js'
 import generatePackageJson from 'rollup-plugin-generate-package-json'
+import dts from 'rollup-plugin-dts'
 
 const { exports } = getPackageJSONDev('scheduler')
 const { packagePathDev, packagePathBuild } = resolvePackagePath('scheduler')
@@ -37,6 +38,7 @@ export default [
           publishConfig: packageJSONObject.publishConfig,
           exports: {
             '.': {
+              types: './esm/index.d.ts',
               import: './esm/index.js',
               require: './cjs/index.js',
               umd: './umd/index.js',
@@ -67,5 +69,13 @@ export default [
     },
     external: [],
     plugins: getBaseRollupPlugins(),
+  },
+  {
+    input: `${packagePathDev}/${exports['.']['import']}`,
+    output: {
+      file: `${packagePathBuild}/esm/index.d.ts`,
+      format: 'esm',
+    },
+    plugins: [dts({ tsconfig: `${packagePathDev}/tsconfig.json` })],
   },
 ]
