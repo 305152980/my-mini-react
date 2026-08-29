@@ -1,5 +1,6 @@
 import type { Dispatcher } from '@my-mini-react/react-reconciler'
 import ReactCurrentDispatcher from './ReactCurrentDispatcher'
+import { type ReactContext } from '@my-mini-react/shared/ReactTypes'
 
 type BasicStateAction<S> = ((state: S) => S) | S
 type Dispatch<A> = (action: A) => void
@@ -54,4 +55,9 @@ export function useState<S>(
 ): [S, Dispatch<BasicStateAction<S>>] {
   const dispatcher = resolveDispatcher()
   return dispatcher.useState(initialState)
+}
+
+export function useContext<T>(Context: ReactContext<T>): T {
+  const dispatcher = resolveDispatcher()
+  return dispatcher.useContext(Context)
 }

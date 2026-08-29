@@ -4,6 +4,19 @@ import type { Lane, Lanes } from './ReactFiberLane'
 import type { ReactContext } from '@my-mini-react/shared/ReactTypes'
 import type { Container } from 'ReactFiberHostConfig'
 
+export type Dependencies = {
+  lanes: Lanes
+  firstContext: ContextDependency<any> | null
+  [key: string]: any
+}
+
+export type ContextDependency<T> = {
+  context: ReactContext<T>
+  next: ContextDependency<unknown> | null
+  memoizedValue: T
+  [key: string]: any
+}
+
 // React Fiber 节点核心类型定义（Fiber 树的最小单元）
 export type Fiber = {
   // 标识 Fiber 节点类型（如函数组件、类组件、原生DOM、Fragment、Portal等）
@@ -61,6 +74,9 @@ export type Fiber = {
   // 删除的子节点列表（仅在协调阶段使用，标记需要删除的节点，提交阶段会根据它们执行删除操作）
   deletions: Array<Fiber> | null
 
+  // 存储当前 Fiber 节点依赖的 Context 依赖链表，用于 Context 更新时判断是否需要重新渲染。
+  dependencies: Dependencies | null
+
   [key: string]: any
 }
 
@@ -86,13 +102,6 @@ export type FiberRoot = {
   // 当前回调的优先级
   callbackPriority: Lane
 
-  [key: string]: any
-}
-
-export type ContextDependency<T> = {
-  context: ReactContext<T>
-  next: ContextDependency<unknown> | null
-  memoizedValue: T
   [key: string]: any
 }
 

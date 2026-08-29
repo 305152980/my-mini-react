@@ -99,8 +99,5 @@ export type ReactContext<T> = {
   Provider: ReactProviderType<T>
   _currentValue: T
 
-  _currentValue2: T
-  _threadCount: number
-
   [key: string]: any
 }

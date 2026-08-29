@@ -32,11 +32,17 @@
 // // 测试事件。
 // import './test-011'
 
+// // 测试 context。
+// import './test-012'
+
 // // 测试合成事件。
 // import './test-013'
 
 // // 测试受控组件事件。
 // import './test-014'
 
-// 测试 memo 组件。
-import './test-015'
+// // 测试 memo 组件。
+// import './test-015'
+
+// 全方位测试 context。
+import './test-016'

@@ -1,4 +1,4 @@
-import type { Fiber, FiberRoot } from './ReactInternalTypes'
+import type { Fiber, FiberRoot, Dispatcher } from './ReactInternalTypes'
 import { createWorkInProgress } from './ReactFiber'
 import { beginWork } from './ReactFiberBeginWork'
 import { completeWork } from './ReactFiberCompleteWork'
@@ -70,6 +70,11 @@ import {
   supportsMicrotasks,
   scheduleMicrotask,
 } from 'ReactFiberHostConfig'
+import { resetContextDependencies } from './ReactFiberNewContext'
+import ReactSharedInternals from '@my-mini-react/shared/ReactSharedInternals'
+import { ContextOnlyDispatcher } from './ReactFiberHooks'
+
+const { ReactCurrentDispatcher } = ReactSharedInternals
 
 type ExecutionContext = number
 
@@ -490,14 +495,19 @@ function performConcurrentWorkOnRoot(
   return performConcurrentWorkOnRoot.bind(null, root)
 }
 
-// TODO: 暂不实现。
-interface Dispatcher {}
-// TODO: 暂不实现。
+// pushDispatcher 和 popDispatcher 的目的：保护渲染外层调用者的 Dispatcher 状态。
 function pushDispatcher(): Dispatcher {
-  return {}
+  const prevDispatcher = ReactCurrentDispatcher.current
+  ReactCurrentDispatcher.current = ContextOnlyDispatcher
+  if (prevDispatcher === null) {
+    return ContextOnlyDispatcher
+  } else {
+    return prevDispatcher
+  }
 }
-// TODO: 暂不实现。
-function popDispatcher(prevDispatcher: Dispatcher | null): void {}
+function popDispatcher(prevDispatcher: Dispatcher | null): void {
+  ReactCurrentDispatcher.current = prevDispatcher
+}
 
 /**
  * 准备全新的渲染栈（清场并初始化）
@@ -594,9 +604,8 @@ function renderRoot(
     }
   } while (true)
 
-  // 待实现。
-  // // 正常渲染流程结束后的收尾工作：重置 Context 的相关依赖。
-  // resetContextDependencies()
+  // 重置 Context 的相关依赖。
+  resetContextDependencies()
 
   // 弹出 Hooks 的 Dispatcher，恢复全局环境。
   popDispatcher(prevDispatcher)
@@ -984,9 +993,10 @@ function commitRootImpl(root: FiberRoot): void {
   flushSyncCallbacks()
 }
 
-// TODO: currentEventTime 重置为 NoTimestamp 的时机没搞懂。
-// 全局变量：用于缓存当前事件的时间戳，初始值为 NoTimestamp (-1)，表示“未初始化”或“无事件”。
+// currentEventTime 的设计目的是"让同一次事件中的多个 setState 共享同一时间戳"。初始值为 NoTimestamp (-1)，表示“未初始化”或“无事件”。
 // 如果在同一事件中安排了两个更新，即使第一次和第二次调用之间的实际时钟时间有所推移，我们也应将它们的事件时间视为同时发生。
+// currentEventTime 重置为 NoTimestamp 的时机：
+//   同步模式不需要精确时间戳，因为所有更新都是 SyncLane（最高优先级），优先级比较不依赖时间；并发模式需要精确时间戳来区分不同优先级的更新，所以每次渲染开始时必须重置。
 let currentEventTime: number = NoTimestamp
 /**
  * 获取当前事件的时间戳

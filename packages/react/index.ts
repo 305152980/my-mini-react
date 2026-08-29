@@ -10,5 +10,6 @@ export {
   useReducer, // 类似 Redux 的状态管理 Hook。
   useRef, // 创建可变引用，修改 .current 不触发重新渲染。
   useState, // 状态 Hook，状态变化触发重新渲染。
-  createContext, // TODO: 待删除。
+  useContext, // 获取 Context 的值。
+  createContext,
 } from './src/React'

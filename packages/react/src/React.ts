@@ -11,6 +11,7 @@ import {
   useReducer,
   useRef,
   useState,
+  useContext,
 } from './ReactHooks'
 
 export {
@@ -26,4 +27,5 @@ export {
   useReducer,
   useRef,
   useState,
+  useContext,
 }

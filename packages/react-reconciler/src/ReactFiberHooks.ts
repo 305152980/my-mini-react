@@ -32,6 +32,7 @@ import {
 } from './ReactFiberWorkLoop'
 import { enqueueConcurrentHookUpdate } from './ReactFiberConcurrentUpdates'
 import { markWorkInProgressReceivedUpdate } from './ReactFiberBeginWork'
+import { readContext } from './ReactFiberNewContext'
 
 const { ReactCurrentDispatcher } = ReactSharedInternals
 
@@ -161,9 +162,9 @@ export function renderWithHooks<Props, SecondArg>(
 }
 
 const HooksDispatcherOnMount: Dispatcher = {
-  // readContext,
+  readContext,
   useCallback: mountCallback,
-  // useContext: readContext,
+  useContext: readContext,
   useEffect: mountEffect,
   // useImperativeHandle: mountImperativeHandle,
   useLayoutEffect: mountLayoutEffect,
@@ -182,9 +183,9 @@ const HooksDispatcherOnMount: Dispatcher = {
 }
 
 const HooksDispatcherOnUpdate: Dispatcher = {
-  // readContext,
+  readContext,
   useCallback: updateCallback,
-  // useContext: readContext,
+  useContext: readContext,
   useEffect: updateEffect,
   // useImperativeHandle: updateImperativeHandle,
   // useInsertionEffect: updateInsertionEffect,
@@ -203,7 +204,7 @@ const HooksDispatcherOnUpdate: Dispatcher = {
 }
 
 export const ContextOnlyDispatcher: Dispatcher = {
-  // readContext,
+  readContext,
   useCallback: throwInvalidHookError,
   // useContext: throwInvalidHookError,
   useEffect: throwInvalidHookError,

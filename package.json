@@ -12,7 +12,7 @@
     "dev:project": "pnpm --dir project dev",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs,.cjs packages",
     "test": "vitest",
-    "build:all": "rimraf dist && rollup --config scripts/rollup/all.config.js && node scripts/rollup/fix-package-json.js && pnpm --dir project install --ignore-workspace"
+    "build:all": "rimraf dist && rollup --config scripts/rollup/all.config.js && node scripts/rollup/fix-package-json.js && pnpm --dir project install --ignore-workspace && rimraf project/node_modules/.vite"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

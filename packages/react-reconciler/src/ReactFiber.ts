@@ -172,7 +172,8 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
 
   // Clone the dependencies object. This is mutated during the render phase, so
   // it cannot be shared with the current fiber.
-  // TODO: 这里还没搞清除。
+  // 在 render 阶段，当组件调用 useContext 读取 Context 值时，React 会修改 workInProgress.dependencies（追加新的依赖、更新 lanes 等）。
+  // 如果不拷贝，workInProgress.dependencies 和 current.dependencies 指向同一个对象，render 阶段的修改会污染 current 树（当前屏幕上正在显示的旧树）。
   const currentDependencies = current.dependencies
   workInProgress.dependencies =
     currentDependencies === null
