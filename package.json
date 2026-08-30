@@ -26,6 +26,7 @@
     "dev:project": "pnpm --dir project dev",
     "test": "vitest",
     "build:all": "rimraf dist && rollup --config scripts/rollup/all.config.js && node scripts/rollup/fix-package-json.js && pnpm --dir project install --ignore-workspace && rimraf project/node_modules/.vite",
+    "cz": "cz",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -39,6 +40,8 @@
     "@types/node": "26.2.0",
     "@typescript-eslint/eslint-plugin": "8.57.0",
     "@typescript-eslint/parser": "8.57.0",
+    "commitizen": "4.3.2",
+    "cz-conventional-changelog": "3.3.0",
     "eslint": "10.0.3",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.6",
