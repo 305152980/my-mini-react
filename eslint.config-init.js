@@ -18,14 +18,6 @@ export default [
     files: ['**/*.{js,jsx,ts,tsx}'],
     rules: {
       ...js.configs.recommended.rules,
-      // 关闭与 React 源码模式冲突的规则。
-      'no-unused-vars': 'off', // 允许未使用的变量（函数签名需匹配 React）。
-      'no-prototype-builtins': 'off', // 允许直接调用 hasOwnProperty。
-      'no-fallthrough': 'off', // 允许 switch fallthrough。
-      'no-empty': 'off', // 允许空代码块。
-      'no-constant-condition': 'off', // 允许 while(true) 等常量条件。
-      'no-useless-assignment': 'off', // 允许在 switch case 中赋值后使用。
-      'no-case-declarations': 'off', // 允许 case 中直接声明变量。
     },
     languageOptions: {
       ecmaVersion: 'latest', // 支持最新 ECMAScript 语法（自动跟随 Node.js 版本）。
@@ -45,10 +37,6 @@ export default [
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      // 关闭 TS 版本的未使用变量规则。
-      '@typescript-eslint/no-unused-vars': 'off',
-      // 关闭 no-undef：TypeScript 编译器已检查未定义变量，ESLint 的 no-undef 会误报 TS 内置类型（如 Iterable）。
-      'no-undef': 'off',
     },
     languageOptions: {
       parser: tseslint.parser, // TypeScript 专用解析器，让 ESLint 能理解 TS 语法。

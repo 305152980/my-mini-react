@@ -22,7 +22,9 @@ type ChildReconciler = (
   lanes: Lanes
 ) => Fiber | null
 
-function ChildReconciler(shouldTrackSideEffects: boolean): ChildReconciler {
+function createChildReconciler(
+  shouldTrackSideEffects: boolean
+): ChildReconciler {
   /**
    * 标记删除单个子 Fiber
    *
@@ -1105,8 +1107,8 @@ function ChildReconciler(shouldTrackSideEffects: boolean): ChildReconciler {
   return reconcileChildFibers
 }
 
-export const reconcileChildFibers = ChildReconciler(true)
-export const mountChildFibers = ChildReconciler(false)
+export const reconcileChildFibers = createChildReconciler(true)
+export const mountChildFibers = createChildReconciler(false)
 
 function isText(newChild: any): boolean {
   return (

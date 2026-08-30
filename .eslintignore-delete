@@ -1,0 +1,41 @@
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist/
+lib/
+build/
+
+# 测试覆盖率
+coverage/
+
+# 静态资源
+public/
+
+# 日志文件
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# 编辑器/IDE 配置
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# TypeScript 声明文件（由编译器生成）
+**/*.d.ts
+
+# 临时文件
+.tmp/
+.cache/
+
+# 示例项目的 node_modules
+examples/node_modules/
+
+# 外部项目目录（不参与 lint）
+project/

@@ -11,39 +11,24 @@
     "editor.insertSpaces": true,
   },
 
-  // // 如果你想支持“手动格式化文档”（如 Shift+Alt+F），才需要下面这些设置。
   // "[javascript]": {
-  //     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  // },
-  // "[javascriptreact]": {
   //     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   // },
   // "[typescript]": {
   //     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
   // },
-  // "[typescriptreact]": {
-  //     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  // },
-  // "[vue]": {
-  //     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  // },
-  // 如果你使用 Prettier 作为格式化工具，可以启用下面的设置（但不推荐与 ESLint 冲突的规则共存）。
+  // 设置 Prettier 作为格式化工具。
   "editor.defaultFormatter": "esbenp.prettier-vscode",
 
   // 启用 ESLint。
   "eslint.enable": true,
-  // ESLint 运行时机：onSave（只在保存时检查，减少性能开销）。
+  // ESLint 运行时机：onSave。（只在保存时检查，减少性能开销。）
   "eslint.run": "onSave",
-  // 启用 Stylelint。
-  "stylelint.enable": true,
-  // 【关键设置】使用 codeActionsOnSave 触发 ESLint、stylelint 自动修复（官方推荐方式）。
+
+  // 关闭保存时自动修复。
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
-    "source.fixAll.stylelint": "explicit",
+    "source.fixAll.eslint": "never"
   },
-  // 【建议关闭】因为自动修复已由 codeActionsOnSave 处理，避免双重触发。
+  // 关闭保存时自动格式化。
   "editor.formatOnSave": false,
-  "chat.viewSessions.orientation": "stacked",
-  "workbench.editor.empty.hint": "hidden",
-  "terminal.integrated.initialHint": false,
 }

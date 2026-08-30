@@ -1,0 +1,16 @@
+{
+    // 该配置主要用于指示此 .eslintrc 文件是 ESLint 的根配置文件。ESLint 不应在该根配置文件所在的目录之外搜索配置文件。
+    "root": true,
+    // @typescript-eslint/parser：指定 ESLint 使用的解析器（parser）。
+    "parser": "@typescript-eslint/parser",
+    "extends": [
+        // ESLint 内置的推荐规则集，覆盖基础代码质量问题。
+        "eslint:recommended",
+        // TypeScript ESLint 插件的推荐规则，替代 eslint:recommended 中的 JS 规则，增加 TS 专属规则。
+        "plugin:@typescript-eslint/recommended",
+        // 这个配置的作用是关闭 eslint:recommended 中与 TypeScript 重复或冲突的规则。
+        "plugin:@typescript-eslint/eslint-recommended"
+    ],
+    // @typescript-eslint：加载 TypeScript ESLint 插件。
+    "plugins": ["@typescript-eslint"]
+}
