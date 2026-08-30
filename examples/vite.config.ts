@@ -14,7 +14,10 @@ export default defineConfig({
     // 路径别名。
     alias: {
       '@src': EXAMPLES_SRC,
-      'ReactFiberHostConfig': resolve(REACT_DOM_SRC, 'client/ReactDOMHostConfig.ts'),
+      ReactFiberHostConfig: resolve(
+        REACT_DOM_SRC,
+        'client/ReactDOMHostConfig.ts'
+      ),
     },
     // 自动补全文件扩展名，导入时可省略.ts/.js等后缀。
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],

@@ -61,6 +61,10 @@ const packageJson = {
     '@rollup/plugin-node-resolve': '16.0.3', // 让 Rollup 能解析 node_modules 中的模块。没有它，Rollup 只能解析相对路径（./foo）和绝对路径，不能解析裸模块名。
     'rollup-plugin-esbuild': '6.2.1', // 用 esbuild 将 TypeScript 转换为 JavaScript（剥离类型，不做类型检查）。
     'rollup-plugin-dts': '6.5.1', // 用于将项目中分散的 .d.ts TypeScript 类型定义文件打包合并成一个单独的类型声明文件。
+
+    // 工程化：
+    husky: '9.1.7', //  Husky 是一个 Git 钩子管理工具，它允许你定义在 Git 提交、推送、合并等操作时运行的脚本。
+    'lint-staged': '17.4.1', // 在执行 git commit 提交代码时，只对本次修改并暂存（staged）的文件运行代码检查和格式化任务。
   },
 }
 
