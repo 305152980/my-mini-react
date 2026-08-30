@@ -65,6 +65,12 @@ const packageJson = {
     // 工程化：
     husky: '9.1.7', //  Husky 是一个 Git 钩子管理工具，它允许你定义在 Git 提交、推送、合并等操作时运行的脚本。
     'lint-staged': '17.4.1', // 在执行 git commit 提交代码时，只对本次修改并暂存（staged）的文件运行代码检查和格式化任务。
+    // 作用：它是 Commitlint 的命令行工具（CLI）核心包。它的主要任务是解析并校验你写的 Git 提交信息是否符合设定的规则。
+    // 工作机制：当你执行 git commit 时，它会拦截你的提交信息，将其解析为结构化对象（如 type、scope、subject 等），然后逐项检查是否违规。如果发现不合规（例如只写了 update 这种毫无意义的描述），它会报错并阻止你的代码提交。
+    '@commitlint/cli': '21.2.2',
+    // 作用：它是一个预定义的配置预设包，基于业界广泛使用的 Angular 团队提交规范（Conventional Commits）。
+    // 工作机制：它本身不提供命令行工具，而是为 @commitlint/cli 提供了一套开箱即用的标准规则。它规定了提交信息必须包含的常见类型（如 feat 新功能、fix 修复、docs 文档变更、refactor 重构等），以及格式要求（如类型必须小写、描述不能为空等）。有了它，你就不需要从零开始手写几十条复杂的校验规则。
+    '@commitlint/config-conventional': '21.2.2',
   },
 }
 
